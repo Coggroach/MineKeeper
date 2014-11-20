@@ -1,6 +1,8 @@
 MineKeeper Specs
 ----------------
 
+![alt tag](http://archiloci.com/wp-content/uploads/2012/10/%C2%A9Simona-Rota_6-1024x682.jpg)
+
 - Colour Class  - Storing RGBA
 - Tile Class 	- Storing Colour, isMine, Texture (Multiplier)
 
