@@ -5,8 +5,24 @@ package com.coggroach.minekeeper.game;
  */
 public enum Difficulty
 {
-    EASY,
-    MEDIUM,
-    HARD,
-    EXPERT;
+    EASY(3, 3),
+    MEDIUM(6, 6),
+    HARD(7, 7),
+    EXPERT(10, 10);
+
+    private int width, height;
+
+    Difficulty(int w, int h)
+    {
+        this.width = w;
+        this.height = h;
+    }
+
+    public int getWidth() {
+        return width;
+    }
+
+    public int getHeight() {
+        return height;
+    }
 }

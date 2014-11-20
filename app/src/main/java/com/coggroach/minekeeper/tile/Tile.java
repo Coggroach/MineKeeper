@@ -16,7 +16,6 @@ public class Tile
         this.isMine = b;
     }
 
-
     public int getId()
     {
         return id;
