@@ -8,7 +8,8 @@ public enum Difficulty
     EASY(3, 3),
     MEDIUM(6, 6),
     HARD(7, 7),
-    EXPERT(10, 10);
+    EXPERT(10, 10),
+    MASSIVE(15, 15);
 
     private int width, height;
 

@@ -12,9 +12,13 @@ public class TestGame extends Game
 
     public TestGame()
     {
-        Difficulty d = Options.SETTING_DIFFICULTY;
-        this.height = d.getHeight();
-        this.width = d.getWidth();
+        this(Options.SETTING_DIFFICULTY.getWidth(), Options.SETTING_DIFFICULTY.getHeight());
+    }
+
+    public TestGame(int w, int h)
+    {
+        this.height = w;
+        this.width = h;
 
         this.tiles = new Tile[width * height];
         for(int i = 0; i < tiles.length; i++)
