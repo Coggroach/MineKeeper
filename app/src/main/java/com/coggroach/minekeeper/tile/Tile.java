@@ -8,12 +8,14 @@ public class Tile
     private int id;
     private TileColour colour;
     private  boolean isMine;
+    private boolean isPressed;
 
-    public Tile(int i, TileColour c, boolean b)
+    public Tile(int i, TileColour c, boolean b, boolean p)
     {
         this.id = i;
         this.colour = c;
         this.isMine = b;
+        this.isPressed = p;
     }
 
     public int getId()
@@ -44,5 +46,13 @@ public class Tile
     public void setMine(boolean isMine)
     {
         this.isMine = isMine;
+    }
+
+    public boolean isPressed() {
+        return isPressed;
+    }
+
+    public void setPressed(boolean isPressed) {
+        this.isPressed = isPressed;
     }
 }

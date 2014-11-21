@@ -9,6 +9,8 @@ import android.util.Log;
 import com.coggroach.minekeeper.R;
 import com.coggroach.minekeeper.common.ResourceReader;
 import com.coggroach.minekeeper.game.TestGame;
+import com.coggroach.minekeeper.tile.Tile;
+import com.coggroach.minekeeper.tile.TileColour;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -46,6 +48,8 @@ public class TileRenderer extends AbstractGLRenderer
     private int mProgramHandle;
     private int mPointProgramHandle;
     private int mTextureDataHandle;
+
+    public float[] XYPos = new float[2];
 
     public TileRenderer(Context context)
     {
@@ -518,7 +522,7 @@ public class TileRenderer extends AbstractGLRenderer
         GLES20.glDrawArrays(GLES20.GL_POINTS, 0, 1);
     }
 
-    public float[] getWorldCoordinatesFromProjection(float x, float y, int width, int height)
+    public float[] getWorldCoordinatesFromProjection(float[] xyPos)
     {
         // Initialize auxiliary variables.
         float[] worldPos = new float[2];
@@ -532,8 +536,8 @@ public class TileRenderer extends AbstractGLRenderer
 
         // Invert y coordinate, as android uses
         // top-left, and ogl bottom-left.
-        float oglTouchY = (height - y);
-        float oglTouchX = x;//(width - x);
+        float oglTouchY = (height - xyPos[1]);
+        float oglTouchX = xyPos[1];//(width - x);
 
        /* Transform the screen point to clip space in ogl (-1,1) */
         normalizedInPoint[0] = (float) (oglTouchX * 2.0f / width - 1.0);
@@ -544,7 +548,7 @@ public class TileRenderer extends AbstractGLRenderer
        /* Obtain the transform matrix and then the inverse. */
         Matrix.invertM(transformMatrix, 0, mProjectionMatrix, 0);
         Matrix.multiplyMM(transformMatrix, 0, transformMatrix, 0, mMVPMatrix, 0);
-        Matrix.multiplyMM(transformMatrix, 0, mProjectionMatrix, 0, transformMatrix, 0);
+        //Matrix.multiplyMM(transformMatrix, 0, mProjectionMatrix, 0, transformMatrix, 0);
         Matrix.invertM(invertedMatrix, 0, transformMatrix, 0);
 
        /* Apply the inverse to the point in clip space */
@@ -559,5 +563,16 @@ public class TileRenderer extends AbstractGLRenderer
         worldPos[1] = outPoint[1] / outPoint[3];
 
         return worldPos;
+    }
+
+    public Tile getTileFromWorld(float[] world)
+    {
+        Tile tile = null;
+        if(world.length == 2)
+        {
+            tile = game.getTile((int) (world[0]+1)/2 * 2, (int) (world[1]+1)/2 * 2);
+        }
+
+        return tile;
     }
 }

@@ -8,7 +8,7 @@ import com.coggroach.minekeeper.tile.TileColour;
  */
 public class TestGame extends Game
 {
-    static TileColour red = new TileColour(1.0F, 0.0F, 0.0F, 1.0F);
+    public static TileColour red = new TileColour(1.0F, 0.0F, 0.0F, 1.0F);
 
     public TestGame()
     {
@@ -23,7 +23,7 @@ public class TestGame extends Game
         this.tiles = new Tile[width * height];
         for(int i = 0; i < tiles.length; i++)
         {
-            tiles[i] = new Tile(i, red, false);
+            tiles[i] = new Tile(i, red, false, false);
         }
     }
 
