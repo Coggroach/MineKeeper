@@ -19,12 +19,21 @@ public class TestGame extends Game
     {
         this.height = w;
         this.width = h;
+        this.start(this.width, this.height);
+    }
 
-        this.tiles = new Tile[width * height];
+    public void start(int w, int h)
+    {
+        this.tiles = new Tile[w * h];
         for(int i = 0; i < tiles.length; i++)
         {
             tiles[i] = new Tile(i, red, false, false);
         }
     }
 
+    @Override
+    public void restart()
+    {
+        this.start(Options.SETTING_DIFFICULTY.getWidth(), Options.SETTING_DIFFICULTY.getHeight());
+    }
 }

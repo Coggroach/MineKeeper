@@ -19,35 +19,39 @@ public class GameActivity extends Activity
     private GLSurfaceView mGLView;
     private TileRenderer mGLRender;
 
+    private View.OnTouchListener listener = new View.OnTouchListener()
+    {
+        @Override
+        public boolean onTouch(View v, MotionEvent event)
+        {
+            mGLRender.XYPos[0] = event.getX();
+            mGLRender.XYPos[1] = event.getY();
+            if(event.getAction() == MotionEvent.ACTION_DOWN)
+                mGLRender.STOP = true;
+
+            //float[] worldPos = mGLRender.getWorldCoordinatesFromProjection(mGLRender.XYPos);
+
+            //Tile tile = mGLRender.getTileFromWorld(worldPos);
+
+            //if (tile != null)
+            //{
+             //   tile.setColour(TestGame.red);
+           // }
+            return true;
+        }
+    };
+
     @Override
     public void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
+
         mGLView = new GLSurfaceView(this);
         mGLRender = new TileRenderer(this);
+
         mGLView.setEGLContextClientVersion(2);
-
         mGLView.setRenderer(mGLRender);
-
-        mGLView.setOnTouchListener(new View.OnTouchListener() {
-            @Override
-            public boolean onTouch(View view, MotionEvent motionEvent) {
-
-                mGLRender.XYPos[0] = motionEvent.getX();
-                mGLRender.XYPos[1] = motionEvent.getY();
-
-                float[] worldPos = mGLRender.getWorldCoordinatesFromProjection(mGLRender.XYPos);
-
-                Tile tile = mGLRender.getTileFromWorld(worldPos);
-
-                if(tile != null)
-                {
-                    tile.setColour(TestGame.red);
-                }
-
-                return false;
-            }
-        });
+        mGLView.setOnTouchListener(listener);
 
         this.setContentView(mGLView);
     }

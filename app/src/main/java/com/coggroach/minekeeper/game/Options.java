@@ -9,4 +9,9 @@ public class Options
 
     public static final int MAX_WIDTH = 16;
     public static final int MAX_HEIGHT = 16;
+
+    public static void changeDifficulty(Difficulty d)
+    {
+        SETTING_DIFFICULTY = d;
+    }
 }

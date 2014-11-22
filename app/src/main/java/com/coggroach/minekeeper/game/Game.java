@@ -5,7 +5,7 @@ import com.coggroach.minekeeper.tile.Tile;
 /**
  * Created by TARDIS on 20/11/2014.
  */
-public class Game
+public abstract class Game
 {
     protected Tile[] tiles;
     protected int width, height;
@@ -19,6 +19,8 @@ public class Game
     {
         return (float) width > (float) (x/height + y); //Divide Both sides by Height; Less Calculations;
     }
+
+    public abstract void restart();
 
     public Tile[] getTiles()
     {

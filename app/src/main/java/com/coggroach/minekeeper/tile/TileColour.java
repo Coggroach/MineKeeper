@@ -14,4 +14,11 @@ public class TileColour
         this.B = k;
         this.A = l;
     }
+
+    public float[] toFloatArray()
+    {
+        return new float[] {R, G, B, A};
+    }
+
+
 }

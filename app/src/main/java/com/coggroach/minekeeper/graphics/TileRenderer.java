@@ -15,6 +15,7 @@ import com.coggroach.minekeeper.tile.TileColour;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
+import java.util.Random;
 
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
@@ -33,13 +34,15 @@ public class TileRenderer extends AbstractGLRenderer
     private float[] mLightModelMatrix = new float[16];
 
     private final FloatBuffer mModelPositions;
-    private final FloatBuffer mModelColors;
     private final FloatBuffer mModelNormals;
+    private final FloatBuffer mModelColors;
     private final FloatBuffer mModelTextureCoordinates;
 
     private int mLightPosHandle;
     private int mTextureUniformHandle;
     private int mTextureCoordinateHandle;
+
+    private int mUniformColorHandle;
 
     private final float[] mLightPosInModelSpace = new float[] {0.0f, 0.0f, 0.0f, 1.0f};
     private final float[] mLightPosInWorldSpace = new float[4];
@@ -50,10 +53,18 @@ public class TileRenderer extends AbstractGLRenderer
     private int mTextureDataHandle;
 
     public float[] XYPos = new float[2];
+    public boolean STOP = false;
+
+    private final int FRAMES_PER_SECOND = 60;
+    private final int COLOUR_PER_SECOND = 1;
+    private final float PERIOD_TIME = 1000 / FRAMES_PER_SECOND;
+    private final float COLOUR_PERIOD_TIME = 1000 / COLOUR_PER_SECOND;
+    private long LAST_TIME;
 
     public TileRenderer(Context context)
     {
         this.context = context;
+        LAST_TIME = System.currentTimeMillis();
         game = new TestGame();
 
         final float[] cubePositionData =
@@ -110,58 +121,6 @@ public class TileRenderer extends AbstractGLRenderer
                         1.0f, -1.0f, 1.0f,
                         -1.0f, -1.0f, 1.0f,
                         -1.0f, -1.0f, -1.0f,
-                };
-
-        // R, G, B, A
-        final float[] cubeColorData =
-                {
-                        // Front face (red)
-                        1.0f, 0.0f, 0.0f, 1.0f,
-                        1.0f, 0.0f, 0.0f, 1.0f,
-                        1.0f, 0.0f, 0.0f, 1.0f,
-                        1.0f, 0.0f, 0.0f, 1.0f,
-                        1.0f, 0.0f, 0.0f, 1.0f,
-                        1.0f, 0.0f, 0.0f, 1.0f,
-
-                        // Right face (green)
-                        0.0f, 1.0f, 0.0f, 1.0f,
-                        0.0f, 1.0f, 0.0f, 1.0f,
-                        0.0f, 1.0f, 0.0f, 1.0f,
-                        0.0f, 1.0f, 0.0f, 1.0f,
-                        0.0f, 1.0f, 0.0f, 1.0f,
-                        0.0f, 1.0f, 0.0f, 1.0f,
-
-                        // Back face (blue)
-                        0.0f, 1.0f, 1.0f, 1.0f,
-                        0.0f, 1.0f, 1.0f, 1.0f,
-                        0.0f, 1.0f, 1.0f, 1.0f,
-                        0.0f, 1.0f, 1.0f, 1.0f,
-                        0.0f, 1.0f, 1.0f, 1.0f,
-                        0.0f, 1.0f, 1.0f, 1.0f,
-
-                        // Left face (yellow)
-                        1.0f, 1.0f, 0.0f, 1.0f,
-                        1.0f, 1.0f, 0.0f, 1.0f,
-                        1.0f, 1.0f, 0.0f, 1.0f,
-                        1.0f, 1.0f, 0.0f, 1.0f,
-                        1.0f, 1.0f, 0.0f, 1.0f,
-                        1.0f, 1.0f, 0.0f, 1.0f,
-
-                        // Top face (cyan)
-                        0.0f, 1.0f, 1.0f, 1.0f,
-                        0.0f, 1.0f, 1.0f, 1.0f,
-                        0.0f, 1.0f, 1.0f, 1.0f,
-                        0.0f, 1.0f, 1.0f, 1.0f,
-                        0.0f, 1.0f, 1.0f, 1.0f,
-                        0.0f, 1.0f, 1.0f, 1.0f,
-
-                        // Bottom face (magenta)
-                        1.0f, 0.0f, 1.0f, 1.0f,
-                        1.0f, 0.0f, 1.0f, 1.0f,
-                        1.0f, 0.0f, 1.0f, 1.0f,
-                        1.0f, 0.0f, 1.0f, 1.0f,
-                        1.0f, 0.0f, 1.0f, 1.0f,
-                        1.0f, 0.0f, 1.0f, 1.0f
                 };
 
         // X, Y, Z
@@ -274,16 +233,28 @@ public class TileRenderer extends AbstractGLRenderer
                         1.0f, 0.0f
                 };
 
+        int colourLength = 4 * 6 * 6;
+
         mModelPositions = ByteBuffer.allocateDirect(cubePositionData.length * mBytesPerFloat).order(ByteOrder.nativeOrder()).asFloatBuffer();
-        mModelColors = ByteBuffer.allocateDirect(cubeColorData.length * mBytesPerFloat).order(ByteOrder.nativeOrder()).asFloatBuffer();
         mModelNormals = ByteBuffer.allocateDirect(cubeNormalData.length * mBytesPerFloat).order(ByteOrder.nativeOrder()).asFloatBuffer();
+        mModelColors = ByteBuffer.allocateDirect(colourLength * mBytesPerFloat).order(ByteOrder.nativeOrder()).asFloatBuffer();
         mModelTextureCoordinates = ByteBuffer.allocateDirect(cubeTextureCoordinateData.length * mBytesPerFloat).order(ByteOrder.nativeOrder()).asFloatBuffer();
 
         mModelPositions.put(cubePositionData).position(0);
-        mModelColors.put(cubeColorData).position(0);
         mModelNormals.put(cubeNormalData).position(0);
+        mModelColors.put(getFloatArrayAs(colourLength, 1.0F)).position(0);
         mModelTextureCoordinates.put(cubeTextureCoordinateData).position(0);
+
     }
+
+    public float[] getFloatArrayAs(int length, float value)
+    {
+        float[] array = new float[length];
+        for(int i = 0; i < array.length; i++)
+            array[i] = value;
+        return array;
+    }
+
 
 
     @Override
@@ -365,7 +336,7 @@ public class TileRenderer extends AbstractGLRenderer
         final int vertexShaderHandle = compileShader(GLES20.GL_VERTEX_SHADER, vertexShader);
         final int fragmentShaderHandle = compileShader(GLES20.GL_FRAGMENT_SHADER, fragmentShader);
 
-        mProgramHandle = createAndLinkProgram(vertexShaderHandle, fragmentShaderHandle, new String[] {"a_Position",  "a_Color", "a_Normal", "a_TexCoordinate"});
+        mProgramHandle = createAndLinkProgram(vertexShaderHandle, fragmentShaderHandle, new String[] {"a_Position",  "a_Color", "a_Normal", "a_TexCoordinate", "u_Color"});
 
         final String pointVertexShader = getVertexShader(R.raw.point_vertex_shader);
         final String pointFragmentShader = getFragmentShader(R.raw.point_fragment_shader);
@@ -378,7 +349,8 @@ public class TileRenderer extends AbstractGLRenderer
     }
 
     @Override
-    public void onSurfaceChanged(GL10 glUnused, int width, int height) {
+    public void onSurfaceChanged(GL10 glUnused, int width, int height)
+    {
         super.onSurfaceChanged(glUnused, width, height);
         this.setProjectionMatrix(width, height);
         this.width = width;
@@ -388,27 +360,8 @@ public class TileRenderer extends AbstractGLRenderer
     float eyeZ = 0.0F;
     int size = 2;
 
-    @Override
-    public void onDrawFrame(GL10 glUnused) {
-        GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT | GLES20.GL_DEPTH_BUFFER_BIT);
-
-        // Do a complete rotation every 10 seconds.
-        long time = SystemClock.uptimeMillis() % 10000L;
-        float angleInDegrees = (360.0f / 10000.0f) * ((int) time);
-
-        eyeZ = eyeZ > 100.0F ? 0.0F : eyeZ + 1.0F;
-
-        if(Math.round(angleInDegrees) == 45.0F)
-        {
-            game = new TestGame(size, size);
-            this.setViewMatrix();
-            size++;
-
-            if(size >= 10)
-                size = 2;
-        }
-
-        // Set our per-vertex lighting program.
+    public void alwaysRender()
+    {
         GLES20.glUseProgram(mProgramHandle);
 
         // Set program handles for cube drawing.
@@ -420,18 +373,22 @@ public class TileRenderer extends AbstractGLRenderer
         mColorHandle = GLES20.glGetAttribLocation(mProgramHandle, "a_Color");
         mNormalHandle = GLES20.glGetAttribLocation(mProgramHandle, "a_Normal");
         mTextureCoordinateHandle = GLES20.glGetAttribLocation(mProgramHandle, "a_TexCoordinate");
+        mUniformColorHandle = GLES20.glGetUniformLocation(mProgramHandle, "u_Color");
 
         // Set the active texture unit to texture unit 0.
         GLES20.glActiveTexture(GLES20.GL_TEXTURE0);
-
         // Bind the texture to this unit.
         GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, mTextureDataHandle);
-
         // Tell the texture uniform sampler to use this texture in the shader by binding to texture unit 0.
         GLES20.glUniform1i(mTextureUniformHandle, 0);
+    }
 
+    public void onDrawFrame()
+    {
+        GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT | GLES20.GL_DEPTH_BUFFER_BIT);
+
+        eyeZ = eyeZ > 100.0F ? 0.0F : eyeZ + 1.0F;
         float[] origin = {0, 0};//this.getWorldCoordinatesFromProjection(0, 0, width, height);
-
         int h = game.getHeight();
         int w = game.getWidth();
 
@@ -449,7 +406,10 @@ public class TileRenderer extends AbstractGLRenderer
 
                 Matrix.translateM(mModelMatrix, 0, x, y, 5.0f);
                 //Matrix.rotateM(mModelMatrix, 0, 0, 0.0f, 1.0F, 0.0f);
-                drawModel();
+                Random rand = new Random();
+
+                // mColorHandle = GLES20.glGetAttribLocation(mProgramHandle, "a_Color");
+                drawModel(new TileColour(rand.nextFloat(), rand.nextFloat(), rand.nextFloat(), 1.0F).toFloatArray());
             }
 
         // Calculate position of the light. Rotate and then push into the distance.
@@ -460,9 +420,19 @@ public class TileRenderer extends AbstractGLRenderer
         Matrix.multiplyMV(mLightPosInWorldSpace, 0, mLightModelMatrix, 0, mLightPosInModelSpace, 0);
         Matrix.multiplyMV(mLightPosInEyeSpace, 0, mViewMatrix, 0, mLightPosInWorldSpace, 0);
         drawLight();
+
+        LAST_TIME = System.currentTimeMillis();
     }
 
-    public void drawModel()
+
+    @Override
+    public void onDrawFrame(GL10 glUnused)
+    {
+        alwaysRender();
+        onDrawFrame();
+    }
+
+    public void drawModel(float[] color)
     {
         // Pass in the position information
         mModelPositions.position(0);
@@ -470,9 +440,9 @@ public class TileRenderer extends AbstractGLRenderer
         GLES20.glEnableVertexAttribArray(mPositionHandle);
 
         // Pass in the color information
-        mModelColors.position(0);
-        GLES20.glVertexAttribPointer(mColorHandle, 4, GLES20.GL_FLOAT, false, 0, mModelColors);
-        GLES20.glEnableVertexAttribArray(mColorHandle);
+        //mModelColors.position(0);
+        //GLES20.glVertexAttribPointer(mColorHandle, 4, GLES20.GL_FLOAT, false, 0, mModelColors);
+        //GLES20.glEnableVertexAttribArray(mColorHandle);
 
         // Pass in the normal information
         mModelNormals.position(0);
@@ -483,6 +453,8 @@ public class TileRenderer extends AbstractGLRenderer
         mModelTextureCoordinates.position(0);
         GLES20.glVertexAttribPointer(mTextureCoordinateHandle, 2, GLES20.GL_FLOAT, false, 0, mModelTextureCoordinates);
         GLES20.glEnableVertexAttribArray(mTextureCoordinateHandle);
+
+        GLES20.glUniform4fv(mUniformColorHandle, 1, color, 0);
 
         // This multiplies the view matrix by the model matrix, and stores the result in the MVP matrix
         // (which currently contains model * view).
@@ -500,7 +472,6 @@ public class TileRenderer extends AbstractGLRenderer
         GLES20.glUniform3f(mLightPosHandle, mLightPosInEyeSpace[0], mLightPosInEyeSpace[1], mLightPosInEyeSpace[2]);
         // Draw the cube.
         GLES20.glDrawArrays(GLES20.GL_TRIANGLES, 0, 36);
-
     }
 
     public void drawLight()
@@ -520,6 +491,16 @@ public class TileRenderer extends AbstractGLRenderer
         GLES20.glUniformMatrix4fv(pointMVPMatrixHandle, 1, false, mMVPMatrix, 0);
         // Draw the point.
         GLES20.glDrawArrays(GLES20.GL_POINTS, 0, 1);
+    }
+
+    public void setModelColor(int tileIndex, TileColour c)
+    {
+        //mModelColors.put(tileIndex + 0, c.R);
+        //mModelColors.put(tileIndex + 1, c.G);
+        //mModelColors.put(tileIndex + 2, c.B);
+        //mModelColors.put(tileIndex + 3, c.A);
+
+
     }
 
     public float[] getWorldCoordinatesFromProjection(float[] xyPos)
@@ -570,7 +551,14 @@ public class TileRenderer extends AbstractGLRenderer
         Tile tile = null;
         if(world.length == 2)
         {
-            tile = game.getTile((int) (world[0]+1)/2 * 2, (int) (world[1]+1)/2 * 2);
+            int x = -game.getWidth()+1; //(w % 2 != 0) ? -w : -(w-1);
+            int y = -game.getHeight()+1; //(h % 2 != 0) ? -h : -(h-1);
+
+            x += 2.0F * (int) (world[0]+1)/2 * 2;
+            y += 2.0F * (int) (world[1]+1)/2 * 2;
+
+
+            tile = game.getTile(x, y);
         }
 
         return tile;
