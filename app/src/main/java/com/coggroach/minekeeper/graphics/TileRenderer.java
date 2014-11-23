@@ -35,7 +35,6 @@ public class TileRenderer extends AbstractGLRenderer
 
     private final FloatBuffer mModelPositions;
     private final FloatBuffer mModelNormals;
-    private final FloatBuffer mModelColors;
     private final FloatBuffer mModelTextureCoordinates;
 
     private int mLightPosHandle;
@@ -52,19 +51,9 @@ public class TileRenderer extends AbstractGLRenderer
     private int mPointProgramHandle;
     private int mTextureDataHandle;
 
-    public float[] XYPos = new float[2];
-    public boolean STOP = false;
-
-    private final int FRAMES_PER_SECOND = 60;
-    private final int COLOUR_PER_SECOND = 1;
-    private final float PERIOD_TIME = 1000 / FRAMES_PER_SECOND;
-    private final float COLOUR_PERIOD_TIME = 1000 / COLOUR_PER_SECOND;
-    private long LAST_TIME;
-
     public TileRenderer(Context context)
     {
         this.context = context;
-        LAST_TIME = System.currentTimeMillis();
         game = new TestGame();
 
         final float[] cubePositionData =
@@ -233,29 +222,15 @@ public class TileRenderer extends AbstractGLRenderer
                         1.0f, 0.0f
                 };
 
-        int colourLength = 4 * 6 * 6;
-
         mModelPositions = ByteBuffer.allocateDirect(cubePositionData.length * mBytesPerFloat).order(ByteOrder.nativeOrder()).asFloatBuffer();
         mModelNormals = ByteBuffer.allocateDirect(cubeNormalData.length * mBytesPerFloat).order(ByteOrder.nativeOrder()).asFloatBuffer();
-        mModelColors = ByteBuffer.allocateDirect(colourLength * mBytesPerFloat).order(ByteOrder.nativeOrder()).asFloatBuffer();
         mModelTextureCoordinates = ByteBuffer.allocateDirect(cubeTextureCoordinateData.length * mBytesPerFloat).order(ByteOrder.nativeOrder()).asFloatBuffer();
 
         mModelPositions.put(cubePositionData).position(0);
         mModelNormals.put(cubeNormalData).position(0);
-        mModelColors.put(getFloatArrayAs(colourLength, 1.0F)).position(0);
         mModelTextureCoordinates.put(cubeTextureCoordinateData).position(0);
 
     }
-
-    public float[] getFloatArrayAs(int length, float value)
-    {
-        float[] array = new float[length];
-        for(int i = 0; i < array.length; i++)
-            array[i] = value;
-        return array;
-    }
-
-
 
     @Override
     public String getVertexShader() {
@@ -294,9 +269,6 @@ public class TileRenderer extends AbstractGLRenderer
         final float upY = 1.0f;
         final float upZ = 0.0f;
 
-        // Set the view matrix. This matrix can be said to represent the camera position.
-        // NOTE: In OpenGL 1, a ModelView matrix is used, which is a combination of a model and
-        // view matrix. In OpenGL 2, we can keep track of these matrices separately if we choose.
         Matrix.setLookAtM(mViewMatrix, 0, eyeX, eyeY, eyeZ, lookX, lookY, lookZ, upX, upY, upZ);
     }
 
@@ -358,7 +330,6 @@ public class TileRenderer extends AbstractGLRenderer
     }
 
     float eyeZ = 0.0F;
-    int size = 2;
 
     public void handleLocations()
     {
@@ -413,8 +384,6 @@ public class TileRenderer extends AbstractGLRenderer
         Matrix.multiplyMV(mLightPosInWorldSpace, 0, mLightModelMatrix, 0, mLightPosInModelSpace, 0);
         Matrix.multiplyMV(mLightPosInEyeSpace, 0, mViewMatrix, 0, mLightPosInWorldSpace, 0);
         drawLight();
-
-        LAST_TIME = System.currentTimeMillis();
     }
 
 
