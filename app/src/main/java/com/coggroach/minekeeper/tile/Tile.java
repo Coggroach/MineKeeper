@@ -48,11 +48,13 @@ public class Tile
         this.isMine = isMine;
     }
 
-    public boolean isPressed() {
+    public boolean isPressed()
+    {
         return isPressed;
     }
 
-    public void setPressed(boolean isPressed) {
+    public void setPressed(boolean isPressed)
+    {
         this.isPressed = isPressed;
     }
 }

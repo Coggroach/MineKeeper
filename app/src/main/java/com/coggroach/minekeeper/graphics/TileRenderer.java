@@ -25,7 +25,7 @@ import javax.microedition.khronos.opengles.GL10;
  */
 public class TileRenderer extends AbstractGLRenderer
 {
-    TestGame game;
+    public TestGame game;
 
     private final Context context;
     private int width, height;
@@ -360,7 +360,7 @@ public class TileRenderer extends AbstractGLRenderer
     float eyeZ = 0.0F;
     int size = 2;
 
-    public void alwaysRender()
+    public void handleLocations()
     {
         GLES20.glUseProgram(mProgramHandle);
 
@@ -386,30 +386,23 @@ public class TileRenderer extends AbstractGLRenderer
     public void onDrawFrame()
     {
         GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT | GLES20.GL_DEPTH_BUFFER_BIT);
-
         eyeZ = eyeZ > 100.0F ? 0.0F : eyeZ + 1.0F;
-        float[] origin = {0, 0};//this.getWorldCoordinatesFromProjection(0, 0, width, height);
+
         int h = game.getHeight();
         int w = game.getWidth();
 
         for(int j = 0; j < h; j++)
             for(int i = 0; i < w; i++)
             {
-                //MODEL
                 Matrix.setIdentityM(mModelMatrix, 0);
-                //Matrix.translateM(mModelMatrix, 0, -1.0F, -1.0F, 0.0F);
-                float x = -w+1; //(w % 2 != 0) ? -w : -(w-1);
-                float y = -h+1; //(h % 2 != 0) ? -h : -(h-1);
+                float x = w-1;
+                float y = h-1;
 
-                x += origin[0] + 2.0F * i;
-                y += origin[1] + 2.0F * j;
+                x -= 2.0F * i;
+                y -= 2.0F * j;
 
                 Matrix.translateM(mModelMatrix, 0, x, y, 5.0f);
-                //Matrix.rotateM(mModelMatrix, 0, 0, 0.0f, 1.0F, 0.0f);
-                Random rand = new Random();
-
-                // mColorHandle = GLES20.glGetAttribLocation(mProgramHandle, "a_Color");
-                drawModel(new TileColour(rand.nextFloat(), rand.nextFloat(), rand.nextFloat(), 1.0F).toFloatArray());
+                drawTile(game.getTile(i, j), mModelMatrix);
             }
 
         // Calculate position of the light. Rotate and then push into the distance.
@@ -428,49 +421,30 @@ public class TileRenderer extends AbstractGLRenderer
     @Override
     public void onDrawFrame(GL10 glUnused)
     {
-        alwaysRender();
+        handleLocations();
         onDrawFrame();
     }
 
-    public void drawModel(float[] color)
+    public void drawTile(Tile tile, float[] mModelMatrix)
     {
-        // Pass in the position information
         mModelPositions.position(0);
         GLES20.glVertexAttribPointer(mPositionHandle, mPositionDataSize, GLES20.GL_FLOAT, false, 0, mModelPositions);
         GLES20.glEnableVertexAttribArray(mPositionHandle);
 
-        // Pass in the color information
-        //mModelColors.position(0);
-        //GLES20.glVertexAttribPointer(mColorHandle, 4, GLES20.GL_FLOAT, false, 0, mModelColors);
-        //GLES20.glEnableVertexAttribArray(mColorHandle);
-
-        // Pass in the normal information
         mModelNormals.position(0);
         GLES20.glVertexAttribPointer(mNormalHandle, mNormalDataSize, GLES20.GL_FLOAT, false, 0, mModelNormals);
         GLES20.glEnableVertexAttribArray(mNormalHandle);
 
-        // Pass in the texture coordinate information
         mModelTextureCoordinates.position(0);
         GLES20.glVertexAttribPointer(mTextureCoordinateHandle, 2, GLES20.GL_FLOAT, false, 0, mModelTextureCoordinates);
         GLES20.glEnableVertexAttribArray(mTextureCoordinateHandle);
 
-        GLES20.glUniform4fv(mUniformColorHandle, 1, color, 0);
-
-        // This multiplies the view matrix by the model matrix, and stores the result in the MVP matrix
-        // (which currently contains model * view).
+        GLES20.glUniform4fv(mUniformColorHandle, 1, tile.getColour().toFloatArray(), 0);
         Matrix.multiplyMM(mMVPMatrix, 0, mViewMatrix, 0, mModelMatrix, 0);
-        // Pass in the modelview matrix.
         GLES20.glUniformMatrix4fv(mMVMatrixHandle, 1, false, mMVPMatrix, 0);
-
-        // This multiplies the modelview matrix by the projection matrix, and stores the result in the MVP matrix
-        // (which now contains model * view * projection).
         Matrix.multiplyMM(mMVPMatrix, 0, mProjectionMatrix, 0, mMVPMatrix, 0);
-
-        // Pass in the combined matrix.
         GLES20.glUniformMatrix4fv(mMVPMatrixHandle, 1, false, mMVPMatrix, 0);
-        // Pass in the light position in eye space.
         GLES20.glUniform3f(mLightPosHandle, mLightPosInEyeSpace[0], mLightPosInEyeSpace[1], mLightPosInEyeSpace[2]);
-        // Draw the cube.
         GLES20.glDrawArrays(GLES20.GL_TRIANGLES, 0, 36);
     }
 
@@ -493,73 +467,30 @@ public class TileRenderer extends AbstractGLRenderer
         GLES20.glDrawArrays(GLES20.GL_POINTS, 0, 1);
     }
 
-    public void setModelColor(int tileIndex, TileColour c)
+    public float[] getWorldPosFromProjection(float xPoint, float yPoint)
     {
-        //mModelColors.put(tileIndex + 0, c.R);
-        //mModelColors.put(tileIndex + 1, c.G);
-        //mModelColors.put(tileIndex + 2, c.B);
-        //mModelColors.put(tileIndex + 3, c.A);
+        float[] normPoint = new float[] {xPoint, yPoint, 1.0F, 1.0F};
+        float[] matrix = new float[16];
 
+        Matrix.orthoM(matrix, 0, 0, width, height, 0, 0, 1);
+        Matrix.multiplyMV(normPoint, 0, matrix, 0, normPoint, 0);
 
+        return normPoint;
     }
 
-    public float[] getWorldCoordinatesFromProjection(float[] xyPos)
-    {
-        // Initialize auxiliary variables.
-        float[] worldPos = new float[2];
-
-        // Auxiliary matrix and vectors
-        // to deal with ogl.
-        float[] invertedMatrix = new float[16];
-        float[] transformMatrix = new float[16];
-        float[] normalizedInPoint = new float[4];
-        float[] outPoint = new float[4];
-
-        // Invert y coordinate, as android uses
-        // top-left, and ogl bottom-left.
-        float oglTouchY = (height - xyPos[1]);
-        float oglTouchX = xyPos[1];//(width - x);
-
-       /* Transform the screen point to clip space in ogl (-1,1) */
-        normalizedInPoint[0] = (float) (oglTouchX * 2.0f / width - 1.0);
-        normalizedInPoint[1] = (float) (oglTouchY * 2.0f / height - 1.0);
-        normalizedInPoint[2] = - 1.0f;
-        normalizedInPoint[3] = 1.0f;
-
-       /* Obtain the transform matrix and then the inverse. */
-        Matrix.invertM(transformMatrix, 0, mProjectionMatrix, 0);
-        Matrix.multiplyMM(transformMatrix, 0, transformMatrix, 0, mMVPMatrix, 0);
-        //Matrix.multiplyMM(transformMatrix, 0, mProjectionMatrix, 0, transformMatrix, 0);
-        Matrix.invertM(invertedMatrix, 0, transformMatrix, 0);
-
-       /* Apply the inverse to the point in clip space */
-        Matrix.multiplyMV(outPoint, 0, invertedMatrix, 0, normalizedInPoint, 0);
-
-        if (outPoint[3] == 0.0)
-            return worldPos;
-
-        // Divide by the 3rd component to find
-        // out the real position.
-        worldPos[0] = outPoint[0] / outPoint[3];
-        worldPos[1] = outPoint[1] / outPoint[3];
-
-        return worldPos;
-    }
-
-    public Tile getTileFromWorld(float[] world)
+    public Tile getTileFromWorld(float xWorld, float yWorld)
     {
         Tile tile = null;
-        if(world.length == 2)
-        {
-            int x = -game.getWidth()+1; //(w % 2 != 0) ? -w : -(w-1);
-            int y = -game.getHeight()+1; //(h % 2 != 0) ? -h : -(h-1);
 
-            x += 2.0F * (int) (world[0]+1)/2 * 2;
-            y += 2.0F * (int) (world[1]+1)/2 * 2;
+            int x = (int) (game.getWidth() * (xWorld + 0.5));
+            int y = (int) (game.getHeight() * -1 * (yWorld - 0.5));
 
+            Log.i("Converted Point1:", String.valueOf(x) + " " + String.valueOf(y));
 
-            tile = game.getTile(x, y);
-        }
+            Log.i("Converted Point2:", String.valueOf(x) + " " + String.valueOf(y));
+
+            if((x >= 0 && y >= 0) && x < game.getWidth() && y < game.getHeight())
+                tile = game.getTile(x, y);
 
         return tile;
     }

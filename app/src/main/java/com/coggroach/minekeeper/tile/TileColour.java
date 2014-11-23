@@ -15,6 +15,11 @@ public class TileColour
         this.A = l;
     }
 
+    public boolean isEqual(TileColour c)
+    {
+        return this.R == c.R && this.G == c.G && this.B == c.B;
+    }
+
     public float[] toFloatArray()
     {
         return new float[] {R, G, B, A};

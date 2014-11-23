@@ -9,10 +9,12 @@ import com.coggroach.minekeeper.tile.TileColour;
 public class TestGame extends Game
 {
     public static TileColour red = new TileColour(1.0F, 0.0F, 0.0F, 1.0F);
+    public static TileColour cyan = new TileColour(0.0F, 1.0F, 1.0F, 1.0F);
 
     public TestGame()
     {
         this(Options.SETTING_DIFFICULTY.getWidth(), Options.SETTING_DIFFICULTY.getHeight());
+        this.tiles[1].setColour(cyan);
     }
 
     public TestGame(int w, int h)

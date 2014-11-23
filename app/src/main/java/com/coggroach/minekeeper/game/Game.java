@@ -12,7 +12,7 @@ public abstract class Game
 
     public Tile getTile(int x, int y)
     {
-        return isInBound(x, y) ? tiles[x + y*height] : null;
+        return (x + y*height < tiles.length) ? tiles[x + y*height] : null;
     }
 
     public boolean isInBound(int x, int y)
