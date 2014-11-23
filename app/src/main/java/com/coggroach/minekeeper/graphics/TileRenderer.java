@@ -3,20 +3,12 @@ package com.coggroach.minekeeper.graphics;
 import android.content.Context;
 import android.opengl.GLES20;
 import android.opengl.Matrix;
-import android.os.SystemClock;
-import android.util.Log;
 
 import com.coggroach.minekeeper.R;
+import com.coggroach.minekeeper.activities.GameActivity;
 import com.coggroach.minekeeper.common.ResourceReader;
 import com.coggroach.minekeeper.game.Options;
-import com.coggroach.minekeeper.game.TestGame;
 import com.coggroach.minekeeper.tile.Tile;
-import com.coggroach.minekeeper.tile.TileColour;
-
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
-import java.nio.FloatBuffer;
-import java.util.Random;
 
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
@@ -26,22 +18,15 @@ import javax.microedition.khronos.opengles.GL10;
  */
 public class TileRenderer extends AbstractGLRenderer
 {
-    public TestGame game;
-
     private final Context context;
     private int width, height;
 
     private float[] mModelMatrix = new float[16];
     private float[] mLightModelMatrix = new float[16];
 
-    private final FloatBuffer mModelPositions;
-    private final FloatBuffer mModelNormals;
-    private final FloatBuffer mModelTextureCoordinates;
-
     private int mLightPosHandle;
     private int mTextureUniformHandle;
     private int mTextureCoordinateHandle;
-
     private int mUniformColorHandle;
 
     private final float[] mLightPosInModelSpace = new float[] {0.0f, 0.0f, 0.0f, 1.0f};
@@ -52,187 +37,9 @@ public class TileRenderer extends AbstractGLRenderer
     private int mPointProgramHandle;
     private int mTextureDataHandle;
 
-    public boolean UPDATE_VIEW = true;
-
     public TileRenderer(Context context)
     {
         this.context = context;
-        game = new TestGame();
-
-        final float[] cubePositionData =
-                {
-                        // In OpenGL counter-clockwise winding is default. This means that when we look at a triangle,
-                        // if the points are counter-clockwise we are looking at the "front". If not we are looking at
-                        // the back. OpenGL has an optimization where all back-facing triangles are culled, since they
-                        // usually represent the backside of an object and aren't visible anyways.
-
-                        // Front face
-                        -1.0f, 1.0f, 1.0f,
-                        -1.0f, -1.0f, 1.0f,
-                        1.0f, 1.0f, 1.0f,
-                        -1.0f, -1.0f, 1.0f,
-                        1.0f, -1.0f, 1.0f,
-                        1.0f, 1.0f, 1.0f,
-
-                        // Right face
-                        1.0f, 1.0f, 1.0f,
-                        1.0f, -1.0f, 1.0f,
-                        1.0f, 1.0f, -1.0f,
-                        1.0f, -1.0f, 1.0f,
-                        1.0f, -1.0f, -1.0f,
-                        1.0f, 1.0f, -1.0f,
-
-                        // Back face
-                        1.0f, 1.0f, -1.0f,
-                        1.0f, -1.0f, -1.0f,
-                        -1.0f, 1.0f, -1.0f,
-                        1.0f, -1.0f, -1.0f,
-                        -1.0f, -1.0f, -1.0f,
-                        -1.0f, 1.0f, -1.0f,
-
-                        // Left face
-                        -1.0f, 1.0f, -1.0f,
-                        -1.0f, -1.0f, -1.0f,
-                        -1.0f, 1.0f, 1.0f,
-                        -1.0f, -1.0f, -1.0f,
-                        -1.0f, -1.0f, 1.0f,
-                        -1.0f, 1.0f, 1.0f,
-
-                        // Top face
-                        -1.0f, 1.0f, -1.0f,
-                        -1.0f, 1.0f, 1.0f,
-                        1.0f, 1.0f, -1.0f,
-                        -1.0f, 1.0f, 1.0f,
-                        1.0f, 1.0f, 1.0f,
-                        1.0f, 1.0f, -1.0f,
-
-                        // Bottom face
-                        1.0f, -1.0f, -1.0f,
-                        1.0f, -1.0f, 1.0f,
-                        -1.0f, -1.0f, -1.0f,
-                        1.0f, -1.0f, 1.0f,
-                        -1.0f, -1.0f, 1.0f,
-                        -1.0f, -1.0f, -1.0f,
-                };
-
-        // X, Y, Z
-        // The normal is used in light calculations and is a vector which points
-        // orthogonal to the plane of the surface. For a cube model, the normals
-        // should be orthogonal to the points of each face.
-        final float[] cubeNormalData =
-                {
-                        // Front face
-                        0.0f, 0.0f, 1.0f,
-                        0.0f, 0.0f, 1.0f,
-                        0.0f, 0.0f, 1.0f,
-                        0.0f, 0.0f, 1.0f,
-                        0.0f, 0.0f, 1.0f,
-                        0.0f, 0.0f, 1.0f,
-
-                        // Right face
-                        1.0f, 0.0f, 0.0f,
-                        1.0f, 0.0f, 0.0f,
-                        1.0f, 0.0f, 0.0f,
-                        1.0f, 0.0f, 0.0f,
-                        1.0f, 0.0f, 0.0f,
-                        1.0f, 0.0f, 0.0f,
-
-                        // Back face
-                        0.0f, 0.0f, -1.0f,
-                        0.0f, 0.0f, -1.0f,
-                        0.0f, 0.0f, -1.0f,
-                        0.0f, 0.0f, -1.0f,
-                        0.0f, 0.0f, -1.0f,
-                        0.0f, 0.0f, -1.0f,
-
-                        // Left face
-                        -1.0f, 0.0f, 0.0f,
-                        -1.0f, 0.0f, 0.0f,
-                        -1.0f, 0.0f, 0.0f,
-                        -1.0f, 0.0f, 0.0f,
-                        -1.0f, 0.0f, 0.0f,
-                        -1.0f, 0.0f, 0.0f,
-
-                        // Top face
-                        0.0f, 1.0f, 0.0f,
-                        0.0f, 1.0f, 0.0f,
-                        0.0f, 1.0f, 0.0f,
-                        0.0f, 1.0f, 0.0f,
-                        0.0f, 1.0f, 0.0f,
-                        0.0f, 1.0f, 0.0f,
-
-                        // Bottom face
-                        0.0f, -1.0f, 0.0f,
-                        0.0f, -1.0f, 0.0f,
-                        0.0f, -1.0f, 0.0f,
-                        0.0f, -1.0f, 0.0f,
-                        0.0f, -1.0f, 0.0f,
-                        0.0f, -1.0f, 0.0f
-                };
-        // S, T (or X, Y)
-        // Texture coordinate data.
-        // Because images have a Y axis pointing downward (values increase as you move down the image) while
-        // OpenGL has a Y axis pointing upward, we adjust for that here by flipping the Y axis.
-        // What's more is that the texture coordinates are the same for every face.
-        final float[] cubeTextureCoordinateData =
-                {
-                        // Front face
-                        0.0f, 0.0f,
-                        0.0f, 1.0f,
-                        1.0f, 0.0f,
-                        0.0f, 1.0f,
-                        1.0f, 1.0f,
-                        1.0f, 0.0f,
-
-                        // Right face
-                        0.0f, 0.0f,
-                        0.0f, 1.0f,
-                        1.0f, 0.0f,
-                        0.0f, 1.0f,
-                        1.0f, 1.0f,
-                        1.0f, 0.0f,
-
-                        // Back face
-                        0.0f, 0.0f,
-                        0.0f, 1.0f,
-                        1.0f, 0.0f,
-                        0.0f, 1.0f,
-                        1.0f, 1.0f,
-                        1.0f, 0.0f,
-
-                        // Left face
-                        0.0f, 0.0f,
-                        0.0f, 1.0f,
-                        1.0f, 0.0f,
-                        0.0f, 1.0f,
-                        1.0f, 1.0f,
-                        1.0f, 0.0f,
-
-                        // Top face
-                        0.0f, 0.0f,
-                        0.0f, 1.0f,
-                        1.0f, 0.0f,
-                        0.0f, 1.0f,
-                        1.0f, 1.0f,
-                        1.0f, 0.0f,
-
-                        // Bottom face
-                        0.0f, 0.0f,
-                        0.0f, 1.0f,
-                        1.0f, 0.0f,
-                        0.0f, 1.0f,
-                        1.0f, 1.0f,
-                        1.0f, 0.0f
-                };
-
-        mModelPositions = ByteBuffer.allocateDirect(cubePositionData.length * mBytesPerFloat).order(ByteOrder.nativeOrder()).asFloatBuffer();
-        mModelNormals = ByteBuffer.allocateDirect(cubeNormalData.length * mBytesPerFloat).order(ByteOrder.nativeOrder()).asFloatBuffer();
-        mModelTextureCoordinates = ByteBuffer.allocateDirect(cubeTextureCoordinateData.length * mBytesPerFloat).order(ByteOrder.nativeOrder()).asFloatBuffer();
-
-        mModelPositions.put(cubePositionData).position(0);
-        mModelNormals.put(cubeNormalData).position(0);
-        mModelTextureCoordinates.put(cubeTextureCoordinateData).position(0);
-
     }
 
     @Override
@@ -256,61 +63,29 @@ public class TileRenderer extends AbstractGLRenderer
     }
 
     @Override
-    public void setViewMatrix() {
-        // Position the eye in front of the origin.
-        final float eyeX = 0.0f;
-        final float eyeY = 0.0f;
-        final float eyeZ = (float) (game.getWidth()/((double) width/height )) + RenderSettings.OBJECT_POSITION_Z + RenderSettings.NEAR_Z;
-
-        Log.i("Ratio", String.valueOf( (double) width/height));
-        Log.i("eyeZ", String.valueOf(eyeZ));
-        Log.i("Width", String.valueOf(game.getWidth()));
-
-        // We are looking toward the distance
-        final float lookX = 0.0f;
-        final float lookY = 0.0f;
-        final float lookZ = 0.0f;
-
-        // Set our up vector. This is where our head would be pointing were we holding the camera.
-        final float upX = 0.0f;
-        final float upY = 1.0f;
-        final float upZ = 0.0f;
-
-        Matrix.setLookAtM(mViewMatrix, 0, eyeX, eyeY, eyeZ, lookX, lookY, lookZ, upX, upY, upZ);
+    public void setViewMatrix()
+    {
+        final float eyeZ = (float) (Options.SETTING_DIFFICULTY.getWidth()/((double) width/height )) + RenderSettings.OBJECT_POSITION_Z + RenderSettings.NEAR_Z;
+        //Matrix.setLookAtM(mViewMatrix, 0, eyeX, eyeY, eyeZ, lookX, lookY, lookZ, upX, upY, upZ);
+        Matrix.setLookAtM(mViewMatrix, 0, 0.0F, 0.0F, eyeZ, 0.0F, 0.0F, 0.0F, 0.0F, 1.0F, 0.0F);
     }
 
     @Override
-    public void setProjectionMatrix(int i, int j) {
-        // Create a new perspective projection matrix. The height will stay the same
-        // while the width will vary as per aspect ratio.
+    public void setProjectionMatrix(int i, int j)
+    {
         final float ratio = (float) i / j;
-        final float left = -ratio;
-        final float right = ratio;
-        final float bottom = -1.0F;
-        final float top = 1.0F;
-        final float near = 1.0f;
-        final float far = game.getWidth()/(ratio) + RenderSettings.OBJECT_LENGTH_Z;
-
-        Matrix.frustumM(mProjectionMatrix, 0, left, right, bottom, top, near, far);
-
-        //Matrix.perspectiveM(mProjectionMatrix, 0, 45, ratio, 1.0F, 100.0F);
-        //Matrix.perspectiveM(mProjectionMatrix, 0, 45, ratio, 1.0F, 100.0F);
+        final float FAR_Z = Options.SETTING_DIFFICULTY.getWidth()/ratio + RenderSettings.OBJECT_LENGTH_Z;
+        //Matrix.frustumM(mProjectionMatrix, 0, left, right, bottom, top, near, far);
+        Matrix.frustumM(mProjectionMatrix, 0, -ratio, ratio, -1.0F, 1.0F, RenderSettings.NEAR_Z, FAR_Z);
     }
 
     @Override
-    public void onSurfaceCreated(GL10 glUnused, EGLConfig config) {
+    public void onSurfaceCreated(GL10 glUnused, EGLConfig config)
+    {
         super.onSurfaceCreated(glUnused, config);
-
-        // Set the background clear color to black.
         GLES20.glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
-
-        // Use culling to remove back faces.
         GLES20.glEnable(GLES20.GL_CULL_FACE);
-
-        // Enable depth testing
         GLES20.glEnable(GLES20.GL_DEPTH_TEST);
-
-        //this.setViewMatrix();
 
         final String vertexShader = getVertexShader(R.raw.per_pixel_vertex_shader);
         final String fragmentShader = getFragmentShader(R.raw.per_pixel_fragment_shader);
@@ -327,7 +102,7 @@ public class TileRenderer extends AbstractGLRenderer
         final int pointFragmentShaderHandle = compileShader(GLES20.GL_FRAGMENT_SHADER, pointFragmentShader);
         mPointProgramHandle = createAndLinkProgram(pointVertexShaderHandle, pointFragmentShaderHandle, new String[] {"a_Position"});
 
-        mTextureDataHandle = ResourceReader.loadTexture(context, R.drawable.bordered_empty);
+        mTextureDataHandle = ResourceReader.loadTexture(context, Options.TEXTURE_ID);
     }
 
     @Override
@@ -341,14 +116,9 @@ public class TileRenderer extends AbstractGLRenderer
         this.setViewMatrix();
     }
 
-    float eyeZ = 5.0F;
-    public float eyeX = 0.0F;
-    public float eyeY = 0.0F;
-
-    public void handleLocations()
+    public void storeHandleLocations()
     {
         GLES20.glUseProgram(mProgramHandle);
-
         // Set program handles for cube drawing.
         mMVPMatrixHandle = GLES20.glGetUniformLocation(mProgramHandle, "u_MVPMatrix");
         mMVMatrixHandle = GLES20.glGetUniformLocation(mProgramHandle, "u_MVMatrix");
@@ -371,53 +141,55 @@ public class TileRenderer extends AbstractGLRenderer
     public void onDrawFrame()
     {
         GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT | GLES20.GL_DEPTH_BUFFER_BIT);
-        //eyeZ = eyeZ > 100.0F ? 0.0F : eyeZ + 1.0F;
 
-        int h = game.getHeight();
-        int w = game.getWidth();
+        if(((GameActivity) context).game.isRendering())
+        {
+            int h = Options.SETTING_DIFFICULTY.getHeight();
+            int w = Options.SETTING_DIFFICULTY.getWidth();
 
-        for(int j = 0; j < h; j++)
-            for(int i = 0; i < w; i++)
+            for (int j = 0; j < h; j++)
             {
-                Matrix.setIdentityM(mModelMatrix, 0);
-                float x = w-1;
-                float y = h-1;
+                for (int i = 0; i < w; i++)
+                {
+                    float x = w - 1 - RenderSettings.OBJECT_LENGTH_Z * i;
+                    float y = h - 1 - RenderSettings.OBJECT_LENGTH_Z * j;
 
-                x -= RenderSettings.OBJECT_LENGTH_Z * i;
-                y -= RenderSettings.OBJECT_LENGTH_Z * j;
-
-                Matrix.translateM(mModelMatrix, 0, x, y, RenderSettings.OBJECT_POSITION_Z);
-                drawTile(game.getTile(i, j), mModelMatrix);
+                    Matrix.setIdentityM(mModelMatrix, 0);
+                    Matrix.translateM(mModelMatrix, 0, x, y, RenderSettings.OBJECT_POSITION_Z);
+                    drawTile(((GameActivity) context).game.getTile(i, j), mModelMatrix);
+                }
             }
-
-        Matrix.setIdentityM(mLightModelMatrix, 0);
-        Matrix.translateM(mLightModelMatrix, 0, eyeX, eyeY, -eyeZ);
-        drawLight(mLightModelMatrix);
+            Matrix.setIdentityM(mLightModelMatrix, 0);
+            Matrix.translateM(mLightModelMatrix, 0, 0.0F, 0.0F, RenderSettings.OBJECT_POSITION_Z + 5.0F);
+            drawLight(mLightModelMatrix);
+        }
     }
 
 
     @Override
     public void onDrawFrame(GL10 glUnused)
     {
-        handleLocations();
+        storeHandleLocations();
         onDrawFrame();
     }
 
     public void drawTile(Tile tile, float[] mModelMatrix)
     {
-        mModelPositions.position(0);
-        GLES20.glVertexAttribPointer(mPositionHandle, mPositionDataSize, GLES20.GL_FLOAT, false, 0, mModelPositions);
+        Tile.getModelPositions().position(0);
+        GLES20.glVertexAttribPointer(mPositionHandle, mPositionDataSize, GLES20.GL_FLOAT, false, 0, Tile.getModelPositions());
         GLES20.glEnableVertexAttribArray(mPositionHandle);
 
-        mModelNormals.position(0);
-        GLES20.glVertexAttribPointer(mNormalHandle, mNormalDataSize, GLES20.GL_FLOAT, false, 0, mModelNormals);
+        Tile.getModelNormals().position(0);
+        GLES20.glVertexAttribPointer(mNormalHandle, mNormalDataSize, GLES20.GL_FLOAT, false, 0, Tile.getModelNormals());
         GLES20.glEnableVertexAttribArray(mNormalHandle);
 
-        mModelTextureCoordinates.position(0);
-        GLES20.glVertexAttribPointer(mTextureCoordinateHandle, 2, GLES20.GL_FLOAT, false, 0, mModelTextureCoordinates);
+        Tile.getModelTextureCoordinates().position(0);
+        GLES20.glVertexAttribPointer(mTextureCoordinateHandle, 2, GLES20.GL_FLOAT, false, 0, Tile.getModelTextureCoordinates());
         GLES20.glEnableVertexAttribArray(mTextureCoordinateHandle);
 
-        GLES20.glUniform4fv(mUniformColorHandle, 1, tile.getColour().toFloatArray(), 0);
+        float[] colour = tile.getDrawingColour();
+
+        GLES20.glUniform4fv(mUniformColorHandle, 1, colour, 0);
         Matrix.multiplyMM(mMVPMatrix, 0, mViewMatrix, 0, mModelMatrix, 0);
         GLES20.glUniformMatrix4fv(mMVMatrixHandle, 1, false, mMVPMatrix, 0);
         Matrix.multiplyMM(mMVPMatrix, 0, mProjectionMatrix, 0, mMVPMatrix, 0);
@@ -432,7 +204,6 @@ public class TileRenderer extends AbstractGLRenderer
         //Matrix.translateM(mLightModelMatrix, 0, 0.0f, 0.0f, 2.0f);
         Matrix.multiplyMV(mLightPosInWorldSpace, 0, mLightModelMatrix, 0, mLightPosInModelSpace, 0);
         Matrix.multiplyMV(mLightPosInEyeSpace, 0, mViewMatrix, 0, mLightPosInWorldSpace, 0);
-
 
         GLES20.glUseProgram(mPointProgramHandle);
         final int pointMVPMatrixHandle = GLES20.glGetUniformLocation(mPointProgramHandle, "u_MVPMatrix");
@@ -456,39 +227,11 @@ public class TileRenderer extends AbstractGLRenderer
         float[] normPoint = new float[] {xPoint, yPoint, 1.0F, 1.0F};
         float[] matrix = new float[16];
 
-        //float[] mVPMatrix = new float[16];
+        float f = (height - width)/2;
 
-        //Matrix.multiplyMM(mVPMatrix, 0, mViewMatrix, 0, mProjectionMatrix, 0);
-        //Matrix.invertM(mVPMatrix, 0, mVPMatrix,0);
-        //Matrix.multiplyMV(normPoint, 0, mVPMatrix, 0, normPoint, 0);
-
-        Matrix.orthoM(matrix, 0, 0, width, width + (height - width)/2, (height - width)/2, 0, 1);
+        Matrix.orthoM(matrix, 0, 0, width, width + f, f, 0, 1);
         Matrix.multiplyMV(normPoint, 0, matrix, 0, normPoint, 0);
 
         return normPoint;
-    }
-
-    public Tile getTileFromWorld(float xWorld, float yWorld)
-    {
-        if(Math.abs(yWorld) > 1.0F)
-            return null;
-
-        float tileWidth = 2.0F/game.getWidth();
-        float tileHeight = 2.0F/game.getHeight();
-
-        int index = 0;
-        for(float j = 1.0F; j > -1.0F; j = j - tileHeight)
-            for(float i = 1.0F; i > -1.0F; i = i - tileWidth)
-            {
-                if(xWorld < i && xWorld >= i - tileWidth && yWorld < j && yWorld >= j - tileHeight)
-                {
-                    String s = xWorld + " " + i + " && " + xWorld + " >= " + i + "-" + tileWidth;
-                    Log.i("Boolean", s);
-                    return game.getTile(index);
-                }
-                index++;
-            }
-
-        return game.getTile(index);
     }
 }

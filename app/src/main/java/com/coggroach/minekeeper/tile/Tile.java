@@ -1,31 +1,210 @@
 package com.coggroach.minekeeper.tile;
 
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
+import java.nio.FloatBuffer;
+
 /**
  * Created by TARDIS on 20/11/2014.
  */
 public class Tile
 {
-    private int id;
     private TileColour colour;
-    private  boolean isMine;
-    private boolean isPressed;
+    private TileStats stats;
 
-    public Tile(int i, TileColour c, boolean b, boolean p)
+    private static final FloatBuffer mModelPositions;
+    private static final FloatBuffer mModelNormals;
+    private static final FloatBuffer mModelTextureCoordinates;
+
+    private static final int mBytesPerFloat = 4;
+
+    static
     {
-        this.id = i;
+        final float[] tilePositions =
+                {
+                        // Front face
+                        -1.0f, 1.0f, 1.0f,
+                        -1.0f, -1.0f, 1.0f,
+                        1.0f, 1.0f, 1.0f,
+                        -1.0f, -1.0f, 1.0f,
+                        1.0f, -1.0f, 1.0f,
+                        1.0f, 1.0f, 1.0f,
+
+                        // Right face
+                        1.0f, 1.0f, 1.0f,
+                        1.0f, -1.0f, 1.0f,
+                        1.0f, 1.0f, -1.0f,
+                        1.0f, -1.0f, 1.0f,
+                        1.0f, -1.0f, -1.0f,
+                        1.0f, 1.0f, -1.0f,
+
+                        // Back face
+                        1.0f, 1.0f, -1.0f,
+                        1.0f, -1.0f, -1.0f,
+                        -1.0f, 1.0f, -1.0f,
+                        1.0f, -1.0f, -1.0f,
+                        -1.0f, -1.0f, -1.0f,
+                        -1.0f, 1.0f, -1.0f,
+
+                        // Left face
+                        -1.0f, 1.0f, -1.0f,
+                        -1.0f, -1.0f, -1.0f,
+                        -1.0f, 1.0f, 1.0f,
+                        -1.0f, -1.0f, -1.0f,
+                        -1.0f, -1.0f, 1.0f,
+                        -1.0f, 1.0f, 1.0f,
+
+                        // Top face
+                        -1.0f, 1.0f, -1.0f,
+                        -1.0f, 1.0f, 1.0f,
+                        1.0f, 1.0f, -1.0f,
+                        -1.0f, 1.0f, 1.0f,
+                        1.0f, 1.0f, 1.0f,
+                        1.0f, 1.0f, -1.0f,
+
+                        // Bottom face
+                        1.0f, -1.0f, -1.0f,
+                        1.0f, -1.0f, 1.0f,
+                        -1.0f, -1.0f, -1.0f,
+                        1.0f, -1.0f, 1.0f,
+                        -1.0f, -1.0f, 1.0f,
+                        -1.0f, -1.0f, -1.0f,
+                };
+
+        final float[] tileNormals =
+                {
+                        // Front face
+                        0.0f, 0.0f, 1.0f,
+                        0.0f, 0.0f, 1.0f,
+                        0.0f, 0.0f, 1.0f,
+                        0.0f, 0.0f, 1.0f,
+                        0.0f, 0.0f, 1.0f,
+                        0.0f, 0.0f, 1.0f,
+
+                        // Right face
+                        1.0f, 0.0f, 0.0f,
+                        1.0f, 0.0f, 0.0f,
+                        1.0f, 0.0f, 0.0f,
+                        1.0f, 0.0f, 0.0f,
+                        1.0f, 0.0f, 0.0f,
+                        1.0f, 0.0f, 0.0f,
+
+                        // Back face
+                        0.0f, 0.0f, -1.0f,
+                        0.0f, 0.0f, -1.0f,
+                        0.0f, 0.0f, -1.0f,
+                        0.0f, 0.0f, -1.0f,
+                        0.0f, 0.0f, -1.0f,
+                        0.0f, 0.0f, -1.0f,
+
+                        // Left face
+                        -1.0f, 0.0f, 0.0f,
+                        -1.0f, 0.0f, 0.0f,
+                        -1.0f, 0.0f, 0.0f,
+                        -1.0f, 0.0f, 0.0f,
+                        -1.0f, 0.0f, 0.0f,
+                        -1.0f, 0.0f, 0.0f,
+
+                        // Top face
+                        0.0f, 1.0f, 0.0f,
+                        0.0f, 1.0f, 0.0f,
+                        0.0f, 1.0f, 0.0f,
+                        0.0f, 1.0f, 0.0f,
+                        0.0f, 1.0f, 0.0f,
+                        0.0f, 1.0f, 0.0f,
+
+                        // Bottom face
+                        0.0f, -1.0f, 0.0f,
+                        0.0f, -1.0f, 0.0f,
+                        0.0f, -1.0f, 0.0f,
+                        0.0f, -1.0f, 0.0f,
+                        0.0f, -1.0f, 0.0f,
+                        0.0f, -1.0f, 0.0f
+                };
+        final float[] tileTextureCoordinates =
+                {
+                        // Front face
+                        0.0f, 0.0f,
+                        0.0f, 1.0f,
+                        1.0f, 0.0f,
+                        0.0f, 1.0f,
+                        1.0f, 1.0f,
+                        1.0f, 0.0f,
+
+                        // Right face
+                        0.0f, 0.0f,
+                        0.0f, 1.0f,
+                        1.0f, 0.0f,
+                        0.0f, 1.0f,
+                        1.0f, 1.0f,
+                        1.0f, 0.0f,
+
+                        // Back face
+                        0.0f, 0.0f,
+                        0.0f, 1.0f,
+                        1.0f, 0.0f,
+                        0.0f, 1.0f,
+                        1.0f, 1.0f,
+                        1.0f, 0.0f,
+
+                        // Left face
+                        0.0f, 0.0f,
+                        0.0f, 1.0f,
+                        1.0f, 0.0f,
+                        0.0f, 1.0f,
+                        1.0f, 1.0f,
+                        1.0f, 0.0f,
+
+                        // Top face
+                        0.0f, 0.0f,
+                        0.0f, 1.0f,
+                        1.0f, 0.0f,
+                        0.0f, 1.0f,
+                        1.0f, 1.0f,
+                        1.0f, 0.0f,
+
+                        // Bottom face
+                        0.0f, 0.0f,
+                        0.0f, 1.0f,
+                        1.0f, 0.0f,
+                        0.0f, 1.0f,
+                        1.0f, 1.0f,
+                        1.0f, 0.0f
+                };
+
+        mModelPositions = ByteBuffer.allocateDirect(tilePositions.length * mBytesPerFloat).order(ByteOrder.nativeOrder()).asFloatBuffer();
+        mModelNormals = ByteBuffer.allocateDirect(tileNormals.length * mBytesPerFloat).order(ByteOrder.nativeOrder()).asFloatBuffer();
+        mModelTextureCoordinates = ByteBuffer.allocateDirect(tileTextureCoordinates.length * mBytesPerFloat).order(ByteOrder.nativeOrder()).asFloatBuffer();
+
+        mModelPositions.put(tilePositions).position(0);
+        mModelNormals.put(tileNormals).position(0);
+        mModelTextureCoordinates.put(tileTextureCoordinates).position(0);
+    }
+
+    public Tile(int i, TileColour c)
+    {
+        this.stats = new TileStats(i);
         this.colour = c;
-        this.isMine = b;
-        this.isPressed = p;
     }
 
-    public int getId()
+    public static FloatBuffer getModelPositions()
     {
-        return id;
+        return mModelPositions;
     }
 
-    public void setId(int id)
+    public static FloatBuffer getModelTextureCoordinates()
     {
-        this.id = id;
+        return mModelTextureCoordinates;
+    }
+
+    public static FloatBuffer getModelNormals()
+    {
+        return mModelNormals;
+    }
+
+    public float[] getDrawingColour()
+    {
+        return (stats.isPressed()) ? getColour().toFloatArray() : TileColour.white.toFloatArray();
     }
 
     public TileColour getColour()
@@ -38,23 +217,13 @@ public class Tile
         this.colour = colour;
     }
 
-    public boolean isMine()
+    public TileStats getStats()
     {
-        return isMine;
+        return stats;
     }
 
-    public void setMine(boolean isMine)
+    protected void setStats(TileStats stats)
     {
-        this.isMine = isMine;
-    }
-
-    public boolean isPressed()
-    {
-        return isPressed;
-    }
-
-    public void setPressed(boolean isPressed)
-    {
-        this.isPressed = isPressed;
+        this.stats = stats;
     }
 }

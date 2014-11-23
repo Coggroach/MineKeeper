@@ -1,4 +1,4 @@
-package com.coggroach.minekeeper;
+package com.coggroach.minekeeper.activities;
 
 import android.app.ActionBar;
 import android.app.Activity;
@@ -11,10 +11,12 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.LinearLayout;
+import android.widget.TextView;
 
 import com.coggroach.minekeeper.game.Difficulty;
+import com.coggroach.minekeeper.game.Game;
 import com.coggroach.minekeeper.game.Options;
-import com.coggroach.minekeeper.game.TestGame;
+import com.coggroach.minekeeper.game.RainbowGame;
 import com.coggroach.minekeeper.graphics.TileRenderer;
 import com.coggroach.minekeeper.tile.Tile;
 import com.coggroach.minekeeper.tile.TileColour;
@@ -26,8 +28,21 @@ import java.util.Random;
  */
 public class GameActivity extends Activity
 {
+    public Game game;
     private GLSurfaceView mGLView;
     private TileRenderer mGLRender;
+    private TextView score;
+    private TextView status;
+
+    private void setScoreText()
+    {
+        score.setText("Score: " + ((RainbowGame) game).getScore() + " ");
+    }
+
+    private void setStatusText(String s)
+    {
+        status.setText(s);
+    }
 
     private View.OnTouchListener listener = new View.OnTouchListener()
     {
@@ -36,30 +51,27 @@ public class GameActivity extends Activity
         {
             if(event.getAction() == MotionEvent.ACTION_DOWN || event.getAction() == MotionEvent.ACTION_MOVE)
             {
-                float[] worldPos = mGLRender.getWorldPosFromProjection(event.getX(), event.getY());
-
-                mGLRender.eyeX = worldPos[0];
-                mGLRender.eyeY = worldPos[1];
-
-                Tile tile = mGLRender.getTileFromWorld(worldPos[0], worldPos[1]);
-
-
-                Log.i("Screen Point", String.valueOf(event.getX()) + " " + String.valueOf(event.getY()));
-                Log.i("World Point", String.valueOf(worldPos[0]) + " " + String.valueOf(worldPos[1]));
-
-                if (tile != null)
+                if(!((RainbowGame) game).isEnded())
                 {
-                    Log.i("Tile Index", String.valueOf(tile.getId()));
+                    float[] worldPos = mGLRender.getWorldPosFromProjection(event.getX(), event.getY());
 
-                    if(tile.getColour().isEqual(TestGame.red))
-                        tile.setColour(TestGame.cyan);
-                    else if(tile.getColour().isEqual(TestGame.cyan))
-                        tile.setColour(TestGame.blue);
-                    else if(tile.getColour().isEqual(TestGame.blue))
-                        tile.setColour(TestGame.grey);
-                    else if(tile.getColour().isEqual(TestGame.grey))
-                        tile.setColour(TestGame.red);
+                    int iTile = ((RainbowGame) game).getTileIndexFromWorld(worldPos[0], worldPos[1]);
 
+                    if (iTile != Integer.MIN_VALUE)
+                    {
+                        if (!game.getTile(iTile).getStats().isPressed())
+                        {
+                            ((RainbowGame) game).incScore();
+                            game.getTile(iTile).getStats().setPressed(true);
+                        }
+                        if (game.getTile(iTile).getStats().isMine())
+                        {
+                            setStatusText("Congrats, Click me to Play Again!");
+                            ((RainbowGame) game).setEnded();
+
+                        }
+                        setScoreText();
+                    }
                 }
             }
             return true;
@@ -72,6 +84,7 @@ public class GameActivity extends Activity
         super.onCreate(savedInstanceState);
 
         mGLView = new GLSurfaceView(this);
+        game = new RainbowGame();
         mGLRender = new TileRenderer(this);
 
         mGLView.setEGLContextClientVersion(2);
@@ -79,31 +92,36 @@ public class GameActivity extends Activity
         mGLView.setOnTouchListener(listener);
         this.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
 
+        ((RainbowGame) game).generateMine();
+
         this.setContentView(mGLView);
 
-        /*
-        Button options = new Button(this);
+        //Screen Guis
+        score = new TextView(this);
+        status = new TextView(this);
         LinearLayout layout = new LinearLayout(this);
         ActionBar.LayoutParams params = new ActionBar.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
 
-        params.gravity = 14;
-        options.setText("Change Difficulty");
+        setScoreText();
+        setStatusText("New Game");
 
-        layout.addView(options);
-
-        addContentView(layout, params);
-
-        options.setOnClickListener(new View.OnClickListener()
+        status.setOnClickListener(new View.OnClickListener()
         {
             @Override
             public void onClick(View v)
             {
-                int i = Difficulty.values().length;
-                Options.changeDifficulty(Difficulty.values()[new Random().nextInt(i)]);
-                mGLRender.game.restart();
-                mGLRender.UPDATE_VIEW = true;
+                if(((RainbowGame) game).isEnded())
+                {
+                    setStatusText("New Game");
+                    game.restart();
+                    ((RainbowGame) game).generateMine();
+                }
             }
-        });*/
+        });
+
+        layout.addView(score);
+        layout.addView(status);
+        addContentView(layout, params);
     }
 
     @Override

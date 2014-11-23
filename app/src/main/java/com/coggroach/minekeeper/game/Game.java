@@ -10,6 +10,10 @@ public abstract class Game
     protected Tile[] tiles;
     protected int width, height;
 
+    public abstract boolean isRendering();
+    public abstract void start(int i, int j);
+    public abstract void restart();
+
     public Tile getTile(int x, int y)
     {
         return (x + y*height < tiles.length) ? tiles[x + y*height] : null;
@@ -20,8 +24,6 @@ public abstract class Game
         return (float) width > (float) (x/height + y); //Divide Both sides by Height; Less Calculations;
     }
 
-    public abstract void restart();
-
     public Tile[] getTiles()
     {
         return tiles;
@@ -30,6 +32,11 @@ public abstract class Game
     public Tile getTile(int i)
     {
         return (tiles.length > i) ? tiles[i] : null;
+    }
+
+    public void setTile(Tile t, int i)
+    {
+        this.tiles[i] = t;
     }
 
     public int getTilesLength()
@@ -57,4 +64,5 @@ public abstract class Game
     public void setHeight(int height) {
         this.height = height;
     }
+
 }
