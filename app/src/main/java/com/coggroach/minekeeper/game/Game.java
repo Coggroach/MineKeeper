@@ -27,6 +27,11 @@ public abstract class Game
         return tiles;
     }
 
+    public Tile getTile(int i)
+    {
+        return (tiles.length > i) ? tiles[i] : null;
+    }
+
     public int getTilesLength()
     {
         return tiles.length;

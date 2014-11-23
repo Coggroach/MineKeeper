@@ -5,7 +5,8 @@ package com.coggroach.minekeeper.game;
  */
 public class Options
 {
-    public static Difficulty SETTING_DIFFICULTY = Difficulty.HARD;
+    public static Difficulty SETTING_DIFFICULTY = Difficulty.MEDIUM;
+    public static float CAMERA_ZOOM_Y = -1.75F * SETTING_DIFFICULTY.getWidth() + 4.25F;
 
     public static final int MAX_WIDTH = 16;
     public static final int MAX_HEIGHT = 16;

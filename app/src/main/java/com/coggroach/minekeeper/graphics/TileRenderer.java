@@ -8,6 +8,7 @@ import android.util.Log;
 
 import com.coggroach.minekeeper.R;
 import com.coggroach.minekeeper.common.ResourceReader;
+import com.coggroach.minekeeper.game.Options;
 import com.coggroach.minekeeper.game.TestGame;
 import com.coggroach.minekeeper.tile.Tile;
 import com.coggroach.minekeeper.tile.TileColour;
@@ -50,6 +51,8 @@ public class TileRenderer extends AbstractGLRenderer
     private int mProgramHandle;
     private int mPointProgramHandle;
     private int mTextureDataHandle;
+
+    public boolean UPDATE_VIEW = true;
 
     public TileRenderer(Context context)
     {
@@ -257,7 +260,11 @@ public class TileRenderer extends AbstractGLRenderer
         // Position the eye in front of the origin.
         final float eyeX = 0.0f;
         final float eyeY = 0.0f;
-        final float eyeZ = (float)-1.75*game.getWidth() + 4.25F; //y = -1.75x + 4.25 near = 1.0f, far = 30.0f
+        final float eyeZ = (float) (game.getWidth()/((double) width/height )) + RenderSettings.OBJECT_POSITION_Z + RenderSettings.NEAR_Z;
+
+        Log.i("Ratio", String.valueOf( (double) width/height));
+        Log.i("eyeZ", String.valueOf(eyeZ));
+        Log.i("Width", String.valueOf(game.getWidth()));
 
         // We are looking toward the distance
         final float lookX = 0.0f;
@@ -282,9 +289,12 @@ public class TileRenderer extends AbstractGLRenderer
         final float bottom = -1.0F;
         final float top = 1.0F;
         final float near = 1.0f;
-        final float far = 30.0f;
+        final float far = game.getWidth()/(ratio) + RenderSettings.OBJECT_LENGTH_Z;
 
         Matrix.frustumM(mProjectionMatrix, 0, left, right, bottom, top, near, far);
+
+        //Matrix.perspectiveM(mProjectionMatrix, 0, 45, ratio, 1.0F, 100.0F);
+        //Matrix.perspectiveM(mProjectionMatrix, 0, 45, ratio, 1.0F, 100.0F);
     }
 
     @Override
@@ -300,7 +310,7 @@ public class TileRenderer extends AbstractGLRenderer
         // Enable depth testing
         GLES20.glEnable(GLES20.GL_DEPTH_TEST);
 
-        this.setViewMatrix();
+        //this.setViewMatrix();
 
         final String vertexShader = getVertexShader(R.raw.per_pixel_vertex_shader);
         final String fragmentShader = getFragmentShader(R.raw.per_pixel_fragment_shader);
@@ -324,12 +334,16 @@ public class TileRenderer extends AbstractGLRenderer
     public void onSurfaceChanged(GL10 glUnused, int width, int height)
     {
         super.onSurfaceChanged(glUnused, width, height);
-        this.setProjectionMatrix(width, height);
         this.width = width;
         this.height = height;
+
+        this.setProjectionMatrix(width, height);
+        this.setViewMatrix();
     }
 
-    float eyeZ = 0.0F;
+    float eyeZ = 5.0F;
+    public float eyeX = 0.0F;
+    public float eyeY = 0.0F;
 
     public void handleLocations()
     {
@@ -357,7 +371,7 @@ public class TileRenderer extends AbstractGLRenderer
     public void onDrawFrame()
     {
         GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT | GLES20.GL_DEPTH_BUFFER_BIT);
-        eyeZ = eyeZ > 100.0F ? 0.0F : eyeZ + 1.0F;
+        //eyeZ = eyeZ > 100.0F ? 0.0F : eyeZ + 1.0F;
 
         int h = game.getHeight();
         int w = game.getWidth();
@@ -369,21 +383,16 @@ public class TileRenderer extends AbstractGLRenderer
                 float x = w-1;
                 float y = h-1;
 
-                x -= 2.0F * i;
-                y -= 2.0F * j;
+                x -= RenderSettings.OBJECT_LENGTH_Z * i;
+                y -= RenderSettings.OBJECT_LENGTH_Z * j;
 
-                Matrix.translateM(mModelMatrix, 0, x, y, 5.0f);
+                Matrix.translateM(mModelMatrix, 0, x, y, RenderSettings.OBJECT_POSITION_Z);
                 drawTile(game.getTile(i, j), mModelMatrix);
             }
 
-        // Calculate position of the light. Rotate and then push into the distance.
         Matrix.setIdentityM(mLightModelMatrix, 0);
-        Matrix.translateM(mLightModelMatrix, 0, 0, 0, -eyeZ);
-        //Matrix.rotateM(mLightModelMatrix, 0, angleInDegrees, 0.0f, 1.0f, 0.0f);
-        //Matrix.translateM(mLightModelMatrix, 0, 0.0f, 0.0f, 2.0f);
-        Matrix.multiplyMV(mLightPosInWorldSpace, 0, mLightModelMatrix, 0, mLightPosInModelSpace, 0);
-        Matrix.multiplyMV(mLightPosInEyeSpace, 0, mViewMatrix, 0, mLightPosInWorldSpace, 0);
-        drawLight();
+        Matrix.translateM(mLightModelMatrix, 0, eyeX, eyeY, -eyeZ);
+        drawLight(mLightModelMatrix);
     }
 
 
@@ -417,8 +426,14 @@ public class TileRenderer extends AbstractGLRenderer
         GLES20.glDrawArrays(GLES20.GL_TRIANGLES, 0, 36);
     }
 
-    public void drawLight()
+    public void drawLight(float[] mLightModelMatrix)
     {
+        //Matrix.rotateM(mLightModelMatrix, 0, angleInDegrees, 0.0f, 1.0f, 0.0f);
+        //Matrix.translateM(mLightModelMatrix, 0, 0.0f, 0.0f, 2.0f);
+        Matrix.multiplyMV(mLightPosInWorldSpace, 0, mLightModelMatrix, 0, mLightPosInModelSpace, 0);
+        Matrix.multiplyMV(mLightPosInEyeSpace, 0, mViewMatrix, 0, mLightPosInWorldSpace, 0);
+
+
         GLES20.glUseProgram(mPointProgramHandle);
         final int pointMVPMatrixHandle = GLES20.glGetUniformLocation(mPointProgramHandle, "u_MVPMatrix");
         final int pointPositionHandle = GLES20.glGetAttribLocation(mPointProgramHandle, "a_Position");
@@ -441,7 +456,13 @@ public class TileRenderer extends AbstractGLRenderer
         float[] normPoint = new float[] {xPoint, yPoint, 1.0F, 1.0F};
         float[] matrix = new float[16];
 
-        Matrix.orthoM(matrix, 0, 0, width, height, 0, 0, 1);
+        //float[] mVPMatrix = new float[16];
+
+        //Matrix.multiplyMM(mVPMatrix, 0, mViewMatrix, 0, mProjectionMatrix, 0);
+        //Matrix.invertM(mVPMatrix, 0, mVPMatrix,0);
+        //Matrix.multiplyMV(normPoint, 0, mVPMatrix, 0, normPoint, 0);
+
+        Matrix.orthoM(matrix, 0, 0, width, width + (height - width)/2, (height - width)/2, 0, 1);
         Matrix.multiplyMV(normPoint, 0, matrix, 0, normPoint, 0);
 
         return normPoint;
@@ -449,18 +470,25 @@ public class TileRenderer extends AbstractGLRenderer
 
     public Tile getTileFromWorld(float xWorld, float yWorld)
     {
-        Tile tile = null;
+        if(Math.abs(yWorld) > 1.0F)
+            return null;
 
-            int x = (int) (game.getWidth() * (xWorld + 0.5));
-            int y = (int) (game.getHeight() * -1 * (yWorld - 0.5));
+        float tileWidth = 2.0F/game.getWidth();
+        float tileHeight = 2.0F/game.getHeight();
 
-            Log.i("Converted Point1:", String.valueOf(x) + " " + String.valueOf(y));
+        int index = 0;
+        for(float j = 1.0F; j > -1.0F; j = j - tileHeight)
+            for(float i = 1.0F; i > -1.0F; i = i - tileWidth)
+            {
+                if(xWorld < i && xWorld >= i - tileWidth && yWorld < j && yWorld >= j - tileHeight)
+                {
+                    String s = xWorld + " " + i + " && " + xWorld + " >= " + i + "-" + tileWidth;
+                    Log.i("Boolean", s);
+                    return game.getTile(index);
+                }
+                index++;
+            }
 
-            Log.i("Converted Point2:", String.valueOf(x) + " " + String.valueOf(y));
-
-            if((x >= 0 && y >= 0) && x < game.getWidth() && y < game.getHeight())
-                tile = game.getTile(x, y);
-
-        return tile;
+        return game.getTile(index);
     }
 }
