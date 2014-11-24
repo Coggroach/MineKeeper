@@ -142,7 +142,7 @@ public class TileRenderer extends AbstractGLRenderer
     {
         GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT | GLES20.GL_DEPTH_BUFFER_BIT);
 
-        if(((GameActivity) context).game.isRendering())
+        if(((GameActivity) context).getGame().isRendering())
         {
             int h = Options.SETTING_DIFFICULTY.getHeight();
             int w = Options.SETTING_DIFFICULTY.getWidth();
@@ -156,7 +156,7 @@ public class TileRenderer extends AbstractGLRenderer
 
                     Matrix.setIdentityM(mModelMatrix, 0);
                     Matrix.translateM(mModelMatrix, 0, x, y, RenderSettings.OBJECT_POSITION_Z);
-                    drawTile(((GameActivity) context).game.getTile(i, j), mModelMatrix);
+                    drawTile(((GameActivity) context).getGame().getTile(i, j), mModelMatrix);
                 }
             }
             Matrix.setIdentityM(mLightModelMatrix, 0);
@@ -222,7 +222,7 @@ public class TileRenderer extends AbstractGLRenderer
         GLES20.glDrawArrays(GLES20.GL_POINTS, 0, 1);
     }
 
-    public float[] getWorldPosFromProjection(float xPoint, float yPoint)
+    public static float[] getWorldPosFromProjection(float xPoint, float yPoint, int width, int height)
     {
         float[] normPoint = new float[] {xPoint, yPoint, 1.0F, 1.0F};
         float[] matrix = new float[16];
