@@ -2,7 +2,9 @@ package com.coggroach.minekeeper.activities;
 
 import android.app.ActionBar;
 import android.app.Activity;
+import android.content.Intent;
 import android.content.pm.ActivityInfo;
+import android.graphics.Color;
 import android.opengl.GLSurfaceView;
 import android.os.Bundle;
 import android.util.Log;
@@ -11,6 +13,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.coggroach.minekeeper.game.Difficulty;
@@ -36,6 +39,8 @@ public class GameActivity extends Activity
 
     private void setScoreText()
     {
+        score.setTextSize(30);
+        score.setTextColor(Color.WHITE);
         score.setText("Score: " + ((RainbowGame) game).getScore() + " ");
     }
 
@@ -66,6 +71,9 @@ public class GameActivity extends Activity
                         }
                         if (game.getTile(iTile).getStats().isMine())
                         {
+
+                            status.setTextSize(50);
+                            status.setTextColor(Color.WHITE);
                             setStatusText("Congrats, Click me to Play Again!");
                             ((RainbowGame) game).setEnded();
 
@@ -82,6 +90,7 @@ public class GameActivity extends Activity
     public void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
+        Intent intent = getIntent();
 
         mGLView = new GLSurfaceView(this);
         game = new RainbowGame();
@@ -99,11 +108,13 @@ public class GameActivity extends Activity
         //Screen Guis
         score = new TextView(this);
         status = new TextView(this);
-        LinearLayout layout = new LinearLayout(this);
+        RelativeLayout layout = new RelativeLayout(this);
         ActionBar.LayoutParams params = new ActionBar.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
 
         setScoreText();
-        setStatusText("New Game");
+        status.setTextSize(30);
+        status.setTextColor(Color.WHITE);
+        setStatusText("                      New Game");
 
         status.setOnClickListener(new View.OnClickListener()
         {
@@ -112,7 +123,9 @@ public class GameActivity extends Activity
             {
                 if(((RainbowGame) game).isEnded())
                 {
-                    setStatusText("New Game");
+                    status.setTextSize(30);
+                    status.setTextColor(Color.WHITE);
+                    setStatusText("                       New Game");
                     game.restart();
                     ((RainbowGame) game).generateMine();
                 }

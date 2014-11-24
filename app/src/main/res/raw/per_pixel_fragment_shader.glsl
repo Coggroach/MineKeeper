@@ -1,4 +1,4 @@
-#version 120
+
 precision mediump float;       	// Set the default precision to medium. We don't need as high of a
 								// precision in the fragment shader.
 uniform vec3 u_LightPos;       	// The position of the light in eye space.
