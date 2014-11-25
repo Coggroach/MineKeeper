@@ -28,16 +28,52 @@ import java.util.Random;
  */
 public class GameActivity extends Activity
 {
-    private Game game;
+    public Game game;
     private GLSurfaceView mGLView;
     private TileRenderer mGLRender;
+    private TextView score;
+    private TextView status;
+
+    private void setScoreText()
+    {
+        score.setText("Score: " + ((RainbowGame) game).getScore() + " ");
+    }
+
+    private void setStatusText(String s)
+    {
+        status.setText(s);
+    }
 
     private View.OnTouchListener listener = new View.OnTouchListener()
     {
         @Override
         public boolean onTouch(View v, MotionEvent event)
         {
-            game.onTouch(v, event);
+            if(event.getAction() == MotionEvent.ACTION_DOWN || event.getAction() == MotionEvent.ACTION_MOVE)
+            {
+                if(!((RainbowGame) game).isEnded())
+                {
+                    float[] worldPos = mGLRender.getWorldPosFromProjection(event.getX(), event.getY());
+
+                    int iTile = ((RainbowGame) game).getTileIndexFromWorld(worldPos[0], worldPos[1]);
+
+                    if (iTile != Integer.MIN_VALUE)
+                    {
+                        if (!game.getTile(iTile).getStats().isPressed())
+                        {
+                            ((RainbowGame) game).incScore();
+                            game.getTile(iTile).getStats().setPressed(true);
+                        }
+                        if (game.getTile(iTile).getStats().isMine())
+                        {
+                            setStatusText("Congrats, Click me to Play Again!");
+                            ((RainbowGame) game).setEnded();
+
+                        }
+                        setScoreText();
+                    }
+                }
+            }
             return true;
         }
     };
@@ -50,18 +86,42 @@ public class GameActivity extends Activity
         mGLView = new GLSurfaceView(this);
         game = new RainbowGame();
         mGLRender = new TileRenderer(this);
-        ActionBar.LayoutParams params = new ActionBar.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
 
         mGLView.setEGLContextClientVersion(2);
         mGLView.setRenderer(mGLRender);
         mGLView.setOnTouchListener(listener);
         this.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
 
-        game.generate();
-        game.initUIElements(this);
+        ((RainbowGame) game).generateMine();
 
         this.setContentView(mGLView);
-        this.addContentView(game.getUILayout(), params);
+
+        //Screen Guis
+        score = new TextView(this);
+        status = new TextView(this);
+        LinearLayout layout = new LinearLayout(this);
+        ActionBar.LayoutParams params = new ActionBar.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
+
+        setScoreText();
+        setStatusText("New Game");
+
+        status.setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View v)
+            {
+                if(((RainbowGame) game).isEnded())
+                {
+                    setStatusText("New Game");
+                    game.restart();
+                    ((RainbowGame) game).generateMine();
+                }
+            }
+        });
+
+        layout.addView(score);
+        layout.addView(status);
+        addContentView(layout, params);
     }
 
     @Override
@@ -76,10 +136,5 @@ public class GameActivity extends Activity
     {
         super.onResume();
         mGLView.onResume();
-    }
-
-    public Game getGame()
-    {
-        return game;
     }
 }

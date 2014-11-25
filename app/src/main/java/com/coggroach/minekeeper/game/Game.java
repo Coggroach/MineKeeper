@@ -1,12 +1,6 @@
 package com.coggroach.minekeeper.game;
 
-import android.content.Context;
-import android.view.MotionEvent;
-import android.view.View;
-
 import com.coggroach.minekeeper.tile.Tile;
-
-import java.util.ArrayList;
 
 /**
  * Created by TARDIS on 20/11/2014.
@@ -15,18 +9,10 @@ public abstract class Game
 {
     protected Tile[] tiles;
     protected int width, height;
-    protected ArrayList<View> UIElements;
-    protected View UILayout;
 
     public abstract boolean isRendering();
-    public abstract void initUIElements(Context c);
     public abstract void start(int i, int j);
     public abstract void restart();
-    public abstract void generate();
-    public abstract boolean isGameOn();
-    public abstract void setGameOn(boolean b);
-    public abstract void onTouch(View v, MotionEvent event);
-
 
     public Tile getTile(int x, int y)
     {
@@ -79,13 +65,4 @@ public abstract class Game
         this.height = height;
     }
 
-    public ArrayList<View> getUIElements()
-    {
-        return UIElements;
-    }
-
-    public View getUILayout()
-    {
-        return UILayout;
-    }
 }

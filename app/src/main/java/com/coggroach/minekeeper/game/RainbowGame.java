@@ -1,19 +1,10 @@
 package com.coggroach.minekeeper.game;
 
-import android.content.Context;
 import android.util.Log;
-import android.view.MotionEvent;
-import android.view.View;
-import android.widget.LinearLayout;
-import android.widget.TextView;
 
-import com.coggroach.minekeeper.graphics.TileRenderer;
 import com.coggroach.minekeeper.tile.Tile;
 import com.coggroach.minekeeper.tile.TileColour;
 
-import org.w3c.dom.Text;
-
-import java.util.ArrayList;
 import java.util.Random;
 
 /**
@@ -23,11 +14,20 @@ public class RainbowGame extends Game
 {
     private boolean isGenerated;
     private boolean canRestart;
-    private boolean isGameOn;
+    private boolean isEnded;
     private boolean isRendering = false;
     private int score;
     private TileColour defaultColour = TileColour.white;
-    private View.OnClickListener endGameListener;
+
+    public boolean isEnded()
+    {
+        return isEnded;
+    }
+
+    public void setEnded()
+    {
+        this.isEnded = true;
+    }
 
     public int getScore()
     {
@@ -44,6 +44,18 @@ public class RainbowGame extends Game
         this(Options.SETTING_DIFFICULTY.getWidth(), Options.SETTING_DIFFICULTY.getHeight());
     }
 
+    public void generateMine()
+    {
+        if(!isGenerated)
+        {
+            Random rand = new Random();
+            int x = rand.nextInt(width);
+            int y = rand.nextInt(height);
+            this.getTile(x, y).getStats().setMine(true);
+            this.generateGrid(x, y);
+        }
+    }
+
     protected RainbowGame(int w, int h)
     {
         this.start(w, h);
@@ -56,57 +68,12 @@ public class RainbowGame extends Game
     }
 
     @Override
-    public void initUIElements(Context c)
-    {
-        this.UIElements = new ArrayList<View>();
-        this.UILayout = new LinearLayout(c);
-
-        TextView score = new TextView(c);
-        TextView status = new TextView(c);
-
-        endGameListener = new View.OnClickListener()
-        {
-            @Override
-            public void onClick(View v)
-            {
-                if(!(isGameOn()))
-                {
-                    updateStatus("New Game");
-                    restart();
-                    generate();
-                }
-            }
-        };
-
-        status.setOnClickListener(endGameListener);
-
-        ((LinearLayout) UILayout).addView(score);
-        ((LinearLayout) UILayout).addView(status);
-
-        UIElements.add(score);
-        UIElements.add(status);
-
-        updateScore();
-        updateStatus("New Game");
-    }
-
-    private void updateScore()
-    {
-        ((TextView) UIElements.get(0)).setText("Score: " + this.score);
-    }
-
-    private void updateStatus(String s)
-    {
-        ((TextView) UIElements.get(1)).setText(s);
-    }
-
-    @Override
     public void start(int w, int h)
     {
         this.isGenerated = false;
         this.canRestart = true;
+        this.isEnded = false;
         this.isRendering = true;
-        this.isGameOn = true;
         this.score = 0;
 
         this.height = w;
@@ -118,14 +85,13 @@ public class RainbowGame extends Game
         }
     }
 
-    @Override
-    public void restart()
+    public void restartSameSize()
     {
         if(canRestart)
         {
             this.isGenerated = false;
+            this.isEnded = false;
             this.score = 0;
-            this.isGameOn = true;
             for(int i = 0; i < tiles.length; i++)
             {
                 tiles[i] = new Tile(i, defaultColour);
@@ -134,57 +100,9 @@ public class RainbowGame extends Game
     }
 
     @Override
-    public void generate()
+    public void restart()
     {
-        if(!isGenerated)
-        {
-            Random rand = new Random();
-            int x = rand.nextInt(width);
-            int y = rand.nextInt(height);
-            this.getTile(x, y).getStats().setMine(true);
-            this.generateGrid(x, y);
-        }
-    }
-
-    @Override
-    public boolean isGameOn()
-    {
-        return isGameOn;
-    }
-
-    @Override
-    public void setGameOn(boolean b)
-    {
-        this.isGameOn = b;
-    }
-
-    @Override
-    public void onTouch(View v, MotionEvent event)
-    {
-        if(event.getAction() == MotionEvent.ACTION_DOWN || event.getAction() == MotionEvent.ACTION_MOVE)
-        {
-            if((this.isGameOn()))
-            {
-                float[] worldPos = TileRenderer.getWorldPosFromProjection(event.getX(), event.getY(), v.getWidth(), v.getHeight());
-
-                int iTile = this.getTileIndexFromWorld(worldPos[0], worldPos[1]);
-
-                if (iTile != Integer.MIN_VALUE)
-                {
-                    if (!this.getTile(iTile).getStats().isPressed())
-                    {
-                        this.incScore();
-                        this.getTile(iTile).getStats().setPressed(true);
-                        this.updateScore();
-                    }
-                    if(this.getTile(iTile).getStats().isMine())
-                    {
-                        this.setGameOn(false);
-                        this.updateStatus("Congratz, Click me to Continue!");
-                    }
-                }
-            }
-        }
+        this.restartSameSize();
     }
 
     protected void generateGrid(int x, int y)
@@ -276,5 +194,15 @@ public class RainbowGame extends Game
     public boolean isGenerated()
     {
         return isGenerated;
+    }
+
+    public void setGenerated(boolean hasGenerated)
+    {
+        this.isGenerated = hasGenerated;
+    }
+
+    public void setCanRestart(boolean canRestart)
+    {
+        this.canRestart = canRestart;
     }
 }
