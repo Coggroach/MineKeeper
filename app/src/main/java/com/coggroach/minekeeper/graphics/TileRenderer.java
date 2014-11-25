@@ -175,27 +175,30 @@ public class TileRenderer extends AbstractGLRenderer
 
     public void drawTile(Tile tile, float[] mModelMatrix)
     {
-        Tile.getModelPositions().position(0);
-        GLES20.glVertexAttribPointer(mPositionHandle, mPositionDataSize, GLES20.GL_FLOAT, false, 0, Tile.getModelPositions());
-        GLES20.glEnableVertexAttribArray(mPositionHandle);
+        if(tile != null)
+        {
+            Tile.getModelPositions().position(0);
+            GLES20.glVertexAttribPointer(mPositionHandle, mPositionDataSize, GLES20.GL_FLOAT, false, 0, Tile.getModelPositions());
+            GLES20.glEnableVertexAttribArray(mPositionHandle);
 
-        Tile.getModelNormals().position(0);
-        GLES20.glVertexAttribPointer(mNormalHandle, mNormalDataSize, GLES20.GL_FLOAT, false, 0, Tile.getModelNormals());
-        GLES20.glEnableVertexAttribArray(mNormalHandle);
+            Tile.getModelNormals().position(0);
+            GLES20.glVertexAttribPointer(mNormalHandle, mNormalDataSize, GLES20.GL_FLOAT, false, 0, Tile.getModelNormals());
+            GLES20.glEnableVertexAttribArray(mNormalHandle);
 
-        Tile.getModelTextureCoordinates().position(0);
-        GLES20.glVertexAttribPointer(mTextureCoordinateHandle, 2, GLES20.GL_FLOAT, false, 0, Tile.getModelTextureCoordinates());
-        GLES20.glEnableVertexAttribArray(mTextureCoordinateHandle);
+            Tile.getModelTextureCoordinates().position(0);
+            GLES20.glVertexAttribPointer(mTextureCoordinateHandle, 2, GLES20.GL_FLOAT, false, 0, Tile.getModelTextureCoordinates());
+            GLES20.glEnableVertexAttribArray(mTextureCoordinateHandle);
 
-        float[] colour = tile.getDrawingColour();
+            float[] colour = tile.getDrawingColour();
 
-        GLES20.glUniform4fv(mUniformColorHandle, 1, colour, 0);
-        Matrix.multiplyMM(mMVPMatrix, 0, mViewMatrix, 0, mModelMatrix, 0);
-        GLES20.glUniformMatrix4fv(mMVMatrixHandle, 1, false, mMVPMatrix, 0);
-        Matrix.multiplyMM(mMVPMatrix, 0, mProjectionMatrix, 0, mMVPMatrix, 0);
-        GLES20.glUniformMatrix4fv(mMVPMatrixHandle, 1, false, mMVPMatrix, 0);
-        GLES20.glUniform3f(mLightPosHandle, mLightPosInEyeSpace[0], mLightPosInEyeSpace[1], mLightPosInEyeSpace[2]);
-        GLES20.glDrawArrays(GLES20.GL_TRIANGLES, 0, 36);
+            GLES20.glUniform4fv(mUniformColorHandle, 1, colour, 0);
+            Matrix.multiplyMM(mMVPMatrix, 0, mViewMatrix, 0, mModelMatrix, 0);
+            GLES20.glUniformMatrix4fv(mMVMatrixHandle, 1, false, mMVPMatrix, 0);
+            Matrix.multiplyMM(mMVPMatrix, 0, mProjectionMatrix, 0, mMVPMatrix, 0);
+            GLES20.glUniformMatrix4fv(mMVPMatrixHandle, 1, false, mMVPMatrix, 0);
+            GLES20.glUniform3f(mLightPosHandle, mLightPosInEyeSpace[0], mLightPosInEyeSpace[1], mLightPosInEyeSpace[2]);
+            GLES20.glDrawArrays(GLES20.GL_TRIANGLES, 0, 36);
+        }
     }
 
     public void drawLight(float[] mLightModelMatrix)
