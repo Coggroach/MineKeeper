@@ -5,8 +5,7 @@
     <uses-sdk
         android:minSdkVersion="8"
         android:targetSdkVersion="17" />
-    android:versionCode="1"
-    android:versionName="1.0" >
+
     <uses-feature
         android:glEsVersion="0x00020000"
         android:required="true" />
@@ -14,7 +13,8 @@
     <android:uses-permission
         android:name="android.permission.WRITE_EXTERNAL_STORAGE"
         android:maxSdkVersion="18" />
-    <android:uses-permission android:name="android.permission.READ_PHONE_STATE" />
+    <android:uses-permission
+        android:name="android.permission.READ_PHONE_STATE" />
     <android:uses-permission
         android:name="android.permission.READ_EXTERNAL_STORAGE"
         android:maxSdkVersion="18" />
@@ -24,13 +24,9 @@
         android:icon="@drawable/ic_launcher"
         android:label="@string/app_name"
         android:theme="@style/AppTheme" >
-        <activity
-            android:name="com.coggroach.minekeeper.activities.MainActivityMenu"
-            android:label="MineKeeper" >
 
-        </activity>
         <activity
-            android:name="com.coggroach.minekeeper.activities.GameActivity"
+            android:name="com.coggroach.minekeeper.activities.MenuActivity"
             android:label="MineKeeper" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -38,6 +34,11 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <activity
+            android:name="com.coggroach.minekeeper.activities.GameActivity">
+        </activity>
+
     </application>
 
 </manifest>
