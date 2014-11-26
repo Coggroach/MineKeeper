@@ -13,8 +13,7 @@
     <android:uses-permission
         android:name="android.permission.WRITE_EXTERNAL_STORAGE"
         android:maxSdkVersion="18" />
-    <android:uses-permission
-        android:name="android.permission.READ_PHONE_STATE" />
+    <android:uses-permission android:name="android.permission.READ_PHONE_STATE" />
     <android:uses-permission
         android:name="android.permission.READ_EXTERNAL_STORAGE"
         android:maxSdkVersion="18" />
@@ -24,7 +23,6 @@
         android:icon="@drawable/ic_launcher"
         android:label="@string/app_name"
         android:theme="@style/AppTheme" >
-
         <activity
             android:name="com.coggroach.minekeeper.activities.MenuActivity"
             android:label="MineKeeper" >
@@ -34,11 +32,12 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-
-        <activity
-            android:name="com.coggroach.minekeeper.activities.GameActivity">
+        <activity android:name="com.coggroach.minekeeper.activities.GameActivity" >
         </activity>
-
+        <activity
+            android:name="com.coggroach.minekeeper.activities.Options"
+            android:label="@string/title_activity_options" >
+        </activity>
     </application>
 
 </manifest>

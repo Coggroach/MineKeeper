@@ -7,4 +7,33 @@
     <string name="action_settings">Settings</string>
     <string name="title_activity_main_activity_menu">MainActivityMenu</string>
 
+    <string name="title_activity_options">Options</string>
+
+    <string name="GameMode">Choose a Game Mode</string>
+
+    <string-array name="GameModeArray">
+        <item>GameMode1</item>
+        <item>GameMode2</item>
+        <item>GameMode3</item>
+    </string-array>
+
+
+    <string name="Difficulty">Choose a Difficulty</string>
+
+    <string-array name="DifficultyArray">
+        <item>Difficulty1</item>
+        <item>Difficulty2</item>
+        <item>Difficulty3</item>
+        <item>Difficulty4</item>
+        <item>Difficulty5</item>
+    </string-array>
+
+    <string name="Textures">Choose a Texture</string>
+
+    <string-array name="TextureArray">
+        <item>Texture1</item>
+        <item>Texture2</item>
+        <item>Texture3</item>
+    </string-array>
+
 </resources>

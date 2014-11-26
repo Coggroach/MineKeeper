@@ -1,0 +1,82 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:paddingLeft="@dimen/activity_horizontal_margin"
+    android:paddingRight="@dimen/activity_horizontal_margin"
+    android:paddingTop="@dimen/activity_vertical_margin"
+    android:paddingBottom="@dimen/activity_vertical_margin"
+    tools:context="com.coggroach.minekeeper.activities.Options"
+    android:background="#ff0059ff">
+
+    <!-- <Button
+         android:layout_width="200dp"
+         android:layout_height="wrap_content"
+         android:textSize="30dp"
+         android:textColor="#FFFFFF"
+         android:text="Game Mode"
+         android:id="@+id/button3"
+         android:background="#ffffa500"
+         android:layout_marginTop="109dp"
+         android:layout_alignParentTop="true"
+         android:layout_centerHorizontal="true" />
+
+     <Button
+         android:layout_width="200dp"
+         android:layout_height="wrap_content"
+         android:textSize="30dp"
+         android:textColor="#FFFFFF"
+         android:text="Difficulty"
+         android:id="@+id/button4"
+         android:layout_below="@+id/button3"
+         android:layout_centerHorizontal="true"
+         android:background="#ffffa500"
+         android:layout_marginTop="40dp" />
+
+     <Button
+         android:layout_width="200dp"
+         android:layout_height="wrap_content"
+         android:textSize="30dp"
+         android:textColor="#FFFFFF"
+         android:text="Textures"
+         android:id="@+id/button5"
+         android:layout_below="@+id/button4"
+         android:layout_centerHorizontal="true"
+         android:background="#ffffa500"
+         android:layout_marginTop="40dp" />-->
+
+    <Spinner
+        android:id="@+id/spinner1"
+        android:layout_width="200dp"
+        android:layout_height="100dp"
+        android:layout_marginTop="25dp"
+        android:layout_centerHorizontal="true"
+        android:background="#ffffa500"
+        android:entries="@array/GameModeArray"
+        android:prompt="@string/GameMode" />
+
+    <Spinner
+        android:id="@+id/spinner2"
+        android:layout_width="200dp"
+        android:layout_height="100dp"
+        android:layout_marginTop="40dp"
+        android:layout_below="@+id/spinner1"
+        android:layout_centerHorizontal="true"
+        android:background="#ffffa500"
+        android:entries="@array/DifficultyArray"
+        android:prompt="@string/Difficulty"/>
+
+    <Spinner
+        android:id="@+id/spinner3"
+        android:layout_width="200dp"
+        android:layout_height="100dp"
+        android:layout_marginTop="40dp"
+        android:layout_below="@+id/spinner2"
+        android:layout_centerHorizontal="true"
+        android:background="#ffffa500"
+        android:entries="@array/TextureArray"
+        android:prompt="@string/Textures"/>
+
+</RelativeLayout>
+
+

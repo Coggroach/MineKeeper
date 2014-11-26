@@ -3,6 +3,7 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/MineKeeper.iml" filepath="$PROJECT_DIR$/MineKeeper.iml" />
+      <module fileurl="file://$PROJECT_DIR$/MineKeeper-Garys.iml" filepath="$PROJECT_DIR$/MineKeeper-Garys.iml" />
       <module fileurl="file://$PROJECT_DIR$/MineKeeper-master.iml" filepath="$PROJECT_DIR$/MineKeeper-master.iml" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
     </modules>

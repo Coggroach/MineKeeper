@@ -9,14 +9,22 @@ import android.view.View;
 
 import com.coggroach.minekeeper.R;
 
-public class MenuActivity extends Activity
-{
+public class MenuActivity extends Activity {
     Intent intent = new Intent(this, GameActivity.class);
 
-    public void onClickPlay(View v)
-    {
-        //startActivity(intent);
+
+    public void onButtonClick(View v){
+
+        Intent intent = new Intent(this, GameActivity.class);
+        startActivity(intent);
     }
+
+    public void onButtonClick2(View w){
+
+        Intent intent = new Intent(this, Options.class);
+        startActivity(intent);
+    }
+
 
     @Override
     public void onCreate(Bundle savedInstanceState)
