@@ -2,7 +2,6 @@ package com.coggroach.minekeeper.game;
 
 import android.content.Context;
 import android.graphics.Color;
-import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.LinearLayout;
@@ -12,15 +11,13 @@ import com.coggroach.minekeeper.graphics.TileRenderer;
 import com.coggroach.minekeeper.tile.Tile;
 import com.coggroach.minekeeper.tile.TileColour;
 
-import org.w3c.dom.Text;
-
 import java.util.ArrayList;
 import java.util.Random;
 
 /**
- * Created by TARDIS on 23/11/2014.
+ * Created by TARDIS on 27/11/2014.
  */
-public class RainbowGame extends Game
+public class MultiGoesGame extends Game
 {
     private boolean isGenerated;
     private boolean canRestart;
@@ -30,6 +27,16 @@ public class RainbowGame extends Game
     private TileColour defaultColour = TileColour.white;
     private View.OnClickListener endGameListener;
 
+    public MultiGoesGame()
+    {
+        this(Options.SETTING_DIFFICULTY.getWidth(), Options.SETTING_DIFFICULTY.getHeight());
+    }
+
+    public MultiGoesGame(int w, int h)
+    {
+        this.start(w, h);
+    }
+
     public int getScore()
     {
         return score;
@@ -37,17 +44,12 @@ public class RainbowGame extends Game
 
     public void incScore()
     {
-        this.score++;
+        this.score += 3;
     }
 
-    public RainbowGame()
+    public void decScore()
     {
-        this(Options.SETTING_DIFFICULTY.getWidth(), Options.SETTING_DIFFICULTY.getHeight());
-    }
-
-    protected RainbowGame(int w, int h)
-    {
-        this.start(w, h);
+        this.score--;
     }
 
     @Override
@@ -114,7 +116,7 @@ public class RainbowGame extends Game
         this.canRestart = true;
         this.isRendering = true;
         this.isGameOn = true;
-        this.score = 0;
+        this.score = 10;
 
         this.height = w;
         this.width = h;
@@ -133,6 +135,7 @@ public class RainbowGame extends Game
             this.isGenerated = false;
             this.score = 0;
             this.isGameOn = true;
+            this.canRestart = false;
             for(int i = 0; i < tiles.length; i++)
             {
                 tiles[i] = new Tile(i, defaultColour);
@@ -145,6 +148,7 @@ public class RainbowGame extends Game
     {
         if(!isGenerated)
         {
+            this.isGenerated = true;
             Random rand = new Random();
             int x = rand.nextInt(width);
             int y = rand.nextInt(height);
@@ -180,14 +184,21 @@ public class RainbowGame extends Game
                 {
                     if (!this.getTile(iTile).getStats().isPressed())
                     {
-                        this.incScore();
+                        this.decScore();
                         this.getTile(iTile).getStats().setPressed(true);
                         this.updateScore();
                     }
+                    if(this.getScore() <= 0)
+                    {
+                        this.updateStatus("Congratz, Click me to Continue!");
+                        this.setGameOn(false);
+                    }
                     if(this.getTile(iTile).getStats().isMine())
                     {
-                        this.setGameOn(false);
-                        this.updateStatus("Congratz, Click me to Continue!");
+                        this.updateScore();
+                        this.incScore();
+                        this.canRestart = true;
+                        this.restart();
                     }
                 }
             }
