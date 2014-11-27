@@ -7,8 +7,8 @@ import android.view.MenuItem;
 
 import com.coggroach.minekeeper.R;
 
-public class Options extends Activity {
-
+public class OptionsActivity extends Activity
+{
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);

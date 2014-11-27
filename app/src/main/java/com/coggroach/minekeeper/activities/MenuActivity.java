@@ -21,7 +21,7 @@ public class MenuActivity extends Activity {
 
     public void onButtonClick2(View w){
 
-        Intent intent = new Intent(this, Options.class);
+        Intent intent = new Intent(this, OptionsActivity.class);
         startActivity(intent);
     }
 

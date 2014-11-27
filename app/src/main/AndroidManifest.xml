@@ -35,7 +35,7 @@
         <activity android:name="com.coggroach.minekeeper.activities.GameActivity" >
         </activity>
         <activity
-            android:name="com.coggroach.minekeeper.activities.Options"
+            android:name=".activities.OptionsActivity"
             android:label="@string/title_activity_options" >
         </activity>
     </application>
