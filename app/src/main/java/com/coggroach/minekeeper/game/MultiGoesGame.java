@@ -75,6 +75,7 @@ public class MultiGoesGame extends Game
                 if(!(isGameOn()))
                 {
                     updateStatus("New Game");
+                    updateScore();
                     restart();
                     generate();
                 }
@@ -133,9 +134,17 @@ public class MultiGoesGame extends Game
         if(canRestart)
         {
             this.isGenerated = false;
-            this.score = 0;
+            this.canRestart = true;
+            this.isRendering = true;
             this.isGameOn = true;
-            this.canRestart = false;
+
+
+            int w = Options.SETTING_DIFFICULTY.getWidth();
+            int h = Options.SETTING_DIFFICULTY.getHeight();
+
+            this.height = w;
+            this.width = h;
+            this.tiles = new Tile[w * h];
             for(int i = 0; i < tiles.length; i++)
             {
                 tiles[i] = new Tile(i, defaultColour);
@@ -184,21 +193,22 @@ public class MultiGoesGame extends Game
                 {
                     if (!this.getTile(iTile).getStats().isPressed())
                     {
-                        this.decScore();
+                        if(!this.getTile(iTile).getStats().isMine())
+                            this.decScore();
                         this.getTile(iTile).getStats().setPressed(true);
                         this.updateScore();
                     }
                     if(this.getScore() <= 0)
                     {
-                        this.updateStatus("Congratz, Click me to Continue!");
+                        this.updateStatus("Hard Luck, Click me to Play Again");
+                        this.score = 10;
                         this.setGameOn(false);
                     }
                     if(this.getTile(iTile).getStats().isMine())
                     {
-                        this.updateScore();
+                        this.updateStatus("Well Done! Click me to Keep Going");
                         this.incScore();
-                        this.canRestart = true;
-                        this.restart();
+                        this.setGameOn(false);
                     }
                 }
             }
@@ -207,7 +217,7 @@ public class MultiGoesGame extends Game
 
     protected void generateGrid(int x, int y)
     {
-        for(int i = 0; i <= 8; i++)//height
+        for(int i = 0; i <= 20; i++)//height
         {
             this.drawLine( 1, -1, x, y + i, i, i);
             this.drawLine(-1, -1, x, y + i, i, i);
@@ -268,6 +278,10 @@ public class MultiGoesGame extends Game
 
     public TileColour getIndexedTileColour(int i)
     {
+        if(i > 8)
+        {
+            i = 8;
+        }
         switch (i)
         {
             case 0:
