@@ -31,6 +31,7 @@ public class GameActivity extends Activity
     private Game game;
     private GLSurfaceView mGLView;
     private TileRenderer mGLRender;
+    private Options options;
 
     private View.OnTouchListener listener = new View.OnTouchListener()
     {
@@ -48,6 +49,8 @@ public class GameActivity extends Activity
         super.onCreate(savedInstanceState);
 
         mGLView = new GLSurfaceView(this);
+        options = new Options(this);
+
         game = new RainbowGame();
         mGLRender = new TileRenderer(this);
         ActionBar.LayoutParams params = new ActionBar.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);

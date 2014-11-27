@@ -1,8 +1,8 @@
 --MineKeeper Options--
-S:TEXTURE="metal_texture_square";
+S:TEXTURE=metal_texture_square;
 I:GAMEMODE=0;
 B:SOUND=false;
 B:MUSIC=false;
-S:STYLE="Normal";
-S:ANIMATION="Normal";
+S:STYLE=Normal;
+S:ANIMATION=Normal;
 
