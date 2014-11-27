@@ -142,7 +142,7 @@ public class TileRenderer extends AbstractGLRenderer
     {
         GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT | GLES20.GL_DEPTH_BUFFER_BIT);
 
-        if(((GameActivity) context).game.isRendering())
+        if(((GameActivity) context).getGame().isRendering())
         {
             int h = Options.SETTING_DIFFICULTY.getHeight();
             int w = Options.SETTING_DIFFICULTY.getWidth();
@@ -156,7 +156,7 @@ public class TileRenderer extends AbstractGLRenderer
 
                     Matrix.setIdentityM(mModelMatrix, 0);
                     Matrix.translateM(mModelMatrix, 0, x, y, RenderSettings.OBJECT_POSITION_Z);
-                    drawTile(((GameActivity) context).game.getTile(i, j), mModelMatrix);
+                    drawTile(((GameActivity) context).getGame().getTile(i, j), mModelMatrix);
                 }
             }
             Matrix.setIdentityM(mLightModelMatrix, 0);
@@ -175,27 +175,30 @@ public class TileRenderer extends AbstractGLRenderer
 
     public void drawTile(Tile tile, float[] mModelMatrix)
     {
-        Tile.getModelPositions().position(0);
-        GLES20.glVertexAttribPointer(mPositionHandle, mPositionDataSize, GLES20.GL_FLOAT, false, 0, Tile.getModelPositions());
-        GLES20.glEnableVertexAttribArray(mPositionHandle);
+        if(tile != null)
+        {
+            Tile.getModelPositions().position(0);
+            GLES20.glVertexAttribPointer(mPositionHandle, mPositionDataSize, GLES20.GL_FLOAT, false, 0, Tile.getModelPositions());
+            GLES20.glEnableVertexAttribArray(mPositionHandle);
 
-        Tile.getModelNormals().position(0);
-        GLES20.glVertexAttribPointer(mNormalHandle, mNormalDataSize, GLES20.GL_FLOAT, false, 0, Tile.getModelNormals());
-        GLES20.glEnableVertexAttribArray(mNormalHandle);
+            Tile.getModelNormals().position(0);
+            GLES20.glVertexAttribPointer(mNormalHandle, mNormalDataSize, GLES20.GL_FLOAT, false, 0, Tile.getModelNormals());
+            GLES20.glEnableVertexAttribArray(mNormalHandle);
 
-        Tile.getModelTextureCoordinates().position(0);
-        GLES20.glVertexAttribPointer(mTextureCoordinateHandle, 2, GLES20.GL_FLOAT, false, 0, Tile.getModelTextureCoordinates());
-        GLES20.glEnableVertexAttribArray(mTextureCoordinateHandle);
+            Tile.getModelTextureCoordinates().position(0);
+            GLES20.glVertexAttribPointer(mTextureCoordinateHandle, 2, GLES20.GL_FLOAT, false, 0, Tile.getModelTextureCoordinates());
+            GLES20.glEnableVertexAttribArray(mTextureCoordinateHandle);
 
-        float[] colour = tile.getDrawingColour();
+            float[] colour = tile.getDrawingColour();
 
-        GLES20.glUniform4fv(mUniformColorHandle, 1, colour, 0);
-        Matrix.multiplyMM(mMVPMatrix, 0, mViewMatrix, 0, mModelMatrix, 0);
-        GLES20.glUniformMatrix4fv(mMVMatrixHandle, 1, false, mMVPMatrix, 0);
-        Matrix.multiplyMM(mMVPMatrix, 0, mProjectionMatrix, 0, mMVPMatrix, 0);
-        GLES20.glUniformMatrix4fv(mMVPMatrixHandle, 1, false, mMVPMatrix, 0);
-        GLES20.glUniform3f(mLightPosHandle, mLightPosInEyeSpace[0], mLightPosInEyeSpace[1], mLightPosInEyeSpace[2]);
-        GLES20.glDrawArrays(GLES20.GL_TRIANGLES, 0, 36);
+            GLES20.glUniform4fv(mUniformColorHandle, 1, colour, 0);
+            Matrix.multiplyMM(mMVPMatrix, 0, mViewMatrix, 0, mModelMatrix, 0);
+            GLES20.glUniformMatrix4fv(mMVMatrixHandle, 1, false, mMVPMatrix, 0);
+            Matrix.multiplyMM(mMVPMatrix, 0, mProjectionMatrix, 0, mMVPMatrix, 0);
+            GLES20.glUniformMatrix4fv(mMVPMatrixHandle, 1, false, mMVPMatrix, 0);
+            GLES20.glUniform3f(mLightPosHandle, mLightPosInEyeSpace[0], mLightPosInEyeSpace[1], mLightPosInEyeSpace[2]);
+            GLES20.glDrawArrays(GLES20.GL_TRIANGLES, 0, 36);
+        }
     }
 
     public void drawLight(float[] mLightModelMatrix)
@@ -222,7 +225,7 @@ public class TileRenderer extends AbstractGLRenderer
         GLES20.glDrawArrays(GLES20.GL_POINTS, 0, 1);
     }
 
-    public float[] getWorldPosFromProjection(float xPoint, float yPoint)
+    public static float[] getWorldPosFromProjection(float xPoint, float yPoint, int width, int height)
     {
         float[] normPoint = new float[] {xPoint, yPoint, 1.0F, 1.0F};
         float[] matrix = new float[16];
