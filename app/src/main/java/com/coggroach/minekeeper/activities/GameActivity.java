@@ -13,7 +13,7 @@ import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
-import com.coggroach.minekeeper.game.Difficulty;
+//import com.coggroach.minekeeper.game.Difficulty;
 import com.coggroach.minekeeper.game.Game;
 import com.coggroach.minekeeper.game.MultiGoesGame;
 import com.coggroach.minekeeper.game.Options;

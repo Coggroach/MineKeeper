@@ -65,7 +65,7 @@ public class TileRenderer extends AbstractGLRenderer
     @Override
     public void setViewMatrix()
     {
-        final float eyeZ = (float) (Options.SETTING_DIFFICULTY.getWidth()/((double) width/height )) + RenderSettings.OBJECT_POSITION_Z + RenderSettings.NEAR_Z;
+        final float eyeZ = (float) (Options.getWidth()/((double) width/height )) + RenderSettings.OBJECT_POSITION_Z + RenderSettings.NEAR_Z;
         //Matrix.setLookAtM(mViewMatrix, 0, eyeX, eyeY, eyeZ, lookX, lookY, lookZ, upX, upY, upZ);
         Matrix.setLookAtM(mViewMatrix, 0, 0.0F, 0.0F, eyeZ, 0.0F, 0.0F, 0.0F, 0.0F, 1.0F, 0.0F);
     }
@@ -74,7 +74,7 @@ public class TileRenderer extends AbstractGLRenderer
     public void setProjectionMatrix(int i, int j)
     {
         final float ratio = (float) i / j;
-        final float FAR_Z = Options.SETTING_DIFFICULTY.getWidth()/ratio + RenderSettings.OBJECT_LENGTH_Z;
+        final float FAR_Z = Options.getWidth()/ratio + RenderSettings.OBJECT_LENGTH_Z;
         //Matrix.frustumM(mProjectionMatrix, 0, left, right, bottom, top, near, far);
         Matrix.frustumM(mProjectionMatrix, 0, -ratio, ratio, -1.0F, 1.0F, RenderSettings.NEAR_Z, FAR_Z);
     }
@@ -150,8 +150,8 @@ public class TileRenderer extends AbstractGLRenderer
 
         if(((GameActivity) context).getGame().isRendering())
         {
-            int h = Options.SETTING_DIFFICULTY.getHeight();
-            int w = Options.SETTING_DIFFICULTY.getWidth();
+            int h = Options.getHeight();
+            int w = Options.getWidth();
 
             for (int j = 0; j < h; j++)
             {

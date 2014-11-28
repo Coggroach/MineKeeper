@@ -42,7 +42,7 @@ public class RainbowGame extends Game
 
     public RainbowGame()
     {
-        this(Options.SETTING_DIFFICULTY.getWidth(), Options.SETTING_DIFFICULTY.getHeight());
+        this(Options.getWidth(), Options.getHeight());
     }
 
     protected RainbowGame(int w, int h)

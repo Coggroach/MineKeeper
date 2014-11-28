@@ -3,7 +3,7 @@ package com.coggroach.minekeeper.game;
 /**
  * Created by TARDIS on 20/11/2014.
  */
-public enum Difficulty
+/*public enum Difficulty
 {
     EASY(3, 3),
     MEDIUM(6, 6),
@@ -27,3 +27,4 @@ public enum Difficulty
         return height;
     }
 }
+*/

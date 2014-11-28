@@ -30,16 +30,19 @@ public class MultiGoesGame extends Game
 
     private int score;
     private int lives;
+    private static int startingLives = 20;
     private TileColour defaultColour = TileColour.white;
     private View.OnClickListener endGameListener;
 
     public MultiGoesGame()
     {
-        this(Options.SETTING_DIFFICULTY.getWidth(), Options.SETTING_DIFFICULTY.getHeight());
+        this(3, 3);
     }
 
     protected MultiGoesGame(int w, int h)
     {
+        Options.width = 3;
+        Options.height = 3;
         this.start(w, h);
     }
 
@@ -55,19 +58,14 @@ public class MultiGoesGame extends Game
 
     public void incDifficulty()
     {
-        if(Options.SETTING_DIFFICULTY == Difficulty.EASY)
-            Options.SETTING_DIFFICULTY = Difficulty.MEDIUM;
-        else if(Options.SETTING_DIFFICULTY == Difficulty.MEDIUM)
-            Options.SETTING_DIFFICULTY = Difficulty.HARD;
-        else if(Options.SETTING_DIFFICULTY == Difficulty.HARD)
-            Options.SETTING_DIFFICULTY = Difficulty.EXPERT;
-        else if(Options.SETTING_DIFFICULTY == Difficulty.EXPERT)
-            Options.SETTING_DIFFICULTY = Difficulty.MASSIVE;
+        Options.width++;
+        Options.height++;
     }
 
     public void resetDifficulty()
     {
-        Options.SETTING_DIFFICULTY = Difficulty.EASY;
+        Options.width = 3;
+        Options.height = 3;
     }
 
     public void decLives()
@@ -166,7 +164,7 @@ public class MultiGoesGame extends Game
         this.canRestart = true;
         this.isRendering = true;
         this.isGameOn = true;
-        this.lives = 20;
+        this.lives = startingLives;
         this.score = 0;
 
         this.height = w;
@@ -189,8 +187,8 @@ public class MultiGoesGame extends Game
             this.isGameOn = true;
 
 
-            int w = Options.SETTING_DIFFICULTY.getWidth();
-            int h = Options.SETTING_DIFFICULTY.getHeight();
+            int w = Options.getWidth();
+            int h = Options.getHeight();
 
             this.height = w;
             this.width = h;
@@ -254,7 +252,7 @@ public class MultiGoesGame extends Game
                     {
                         hasWon = false;
                         this.updateStatus("Hard Luck, Click me to Play Again");
-                        this.lives = 20;
+                        this.lives = startingLives;
                         this.score = 0;
                         this.setGameOn(false);
                     }
