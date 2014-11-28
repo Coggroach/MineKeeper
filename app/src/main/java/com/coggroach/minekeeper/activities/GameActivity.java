@@ -15,6 +15,7 @@ import android.widget.TextView;
 
 import com.coggroach.minekeeper.game.Difficulty;
 import com.coggroach.minekeeper.game.Game;
+import com.coggroach.minekeeper.game.MultiGoesGame;
 import com.coggroach.minekeeper.game.Options;
 import com.coggroach.minekeeper.game.RainbowGame;
 import com.coggroach.minekeeper.graphics.TileRenderer;
@@ -42,13 +43,26 @@ public class GameActivity extends Activity
         }
     };
 
+    protected Game getGameFromId(int i)
+    {
+        switch (i)
+        {
+            case 0:
+                return new RainbowGame();
+            case 1:
+                return new MultiGoesGame();
+            default:
+                return  new RainbowGame();
+        }
+    }
+
     @Override
     public void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
 
         mGLView = new GLSurfaceView(this);
-        game = new RainbowGame();
+        game = getGameFromId(Options.GAMEMODE_ID);
         mGLRender = new TileRenderer(this);
         ActionBar.LayoutParams params = new ActionBar.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
 
