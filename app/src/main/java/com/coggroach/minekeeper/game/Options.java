@@ -7,7 +7,7 @@ import com.coggroach.minekeeper.R;
  */
 public class Options
 {
-    public static Difficulty SETTING_DIFFICULTY = Difficulty.MEDIUM;
+    public static Difficulty SETTING_DIFFICULTY = Difficulty.EASY;
     public static int TEXTURE_ID = R.drawable.metal_texture_square;
     public static int GAMEMODE_ID = 1;
 }

@@ -26,6 +26,8 @@ public abstract class Game
     public abstract boolean isGameOn();
     public abstract void setGameOn(boolean b);
     public abstract void onTouch(View v, MotionEvent event);
+    public abstract void updateView(boolean b);
+    public abstract boolean getUpdateView();
 
 
     public Tile getTile(int x, int y)
@@ -88,4 +90,5 @@ public abstract class Game
     {
         return UILayout;
     }
+
 }

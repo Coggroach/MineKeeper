@@ -149,7 +149,7 @@ public class RainbowGame extends Game
             int x = rand.nextInt(width);
             int y = rand.nextInt(height);
             this.getTile(x, y).getStats().setMine(true);
-            GameHelper.generateGrid(this, x, y, 8);
+            GameHelper.generateGrid(this, x, y, 10);
         }
     }
 
@@ -192,6 +192,16 @@ public class RainbowGame extends Game
                 }
             }
         }
+    }
+
+    @Override
+    public void updateView(boolean b) {
+
+    }
+
+    @Override
+    public boolean getUpdateView() {
+        return true;
     }
 
     public boolean isGenerated()

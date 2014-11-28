@@ -32,6 +32,7 @@ public class GameActivity extends Activity
     private Game game;
     private GLSurfaceView mGLView;
     private TileRenderer mGLRender;
+    private boolean updateRenderer;
 
     private View.OnTouchListener listener = new View.OnTouchListener()
     {

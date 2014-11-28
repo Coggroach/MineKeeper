@@ -142,6 +142,12 @@ public class TileRenderer extends AbstractGLRenderer
     {
         GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT | GLES20.GL_DEPTH_BUFFER_BIT);
 
+        if(((GameActivity) context).getGame().getUpdateView())
+        {
+            this.setViewMatrix();
+            this.setProjectionMatrix(width, height);
+        }
+
         if(((GameActivity) context).getGame().isRendering())
         {
             int h = Options.SETTING_DIFFICULTY.getHeight();
